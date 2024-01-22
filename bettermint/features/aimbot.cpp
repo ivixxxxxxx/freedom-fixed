@@ -1,10 +1,17 @@
-#include "features/aimbot.h"
-#include <cmath>
-#include <cstdlib>
+#include "osu_types.h"
+#include "virtual_input.h"
+#include "osu_window.h"
+#include "osu_data.h"
+#include "osu_hitobject.h"
+#include "AQM.h"
+#include "menu_object.h"
+#include <string_view>
 
 namespace autobot {
 
-    constexpr static u32 MODULE_ID{ 1 };
+    // ... (rest of your code)
+
+    constexpr u32 MODULE_ID{ 1 };
 
     u8 active{};
     u32 last_top_note{};
@@ -22,7 +29,7 @@ namespace autobot {
 
         auto* top_note = hit_manager->get_top_note();
 
-        if (top_note == nullptr || (press_delta + time - top_note->time[0]) < 0)
+        if (top_note == 0 || (press_delta + time - top_note->time[0]) < 0)
             return;
 
         vec2 target_pos{ top_note->pos };
@@ -40,10 +47,10 @@ namespace autobot {
         else if (top_note->type & Spinner) {
 
             constexpr static float spin_r = 0.001f;
-            const auto t = static_cast<float>(time & 63) / 63.f;
+            const auto t = float(time & 63) / 63.f;
 
-            target_pos.x += cosf(-3.141592f + 2.f * 3.141592f * t) * spin_r;
-            target_pos.y += sinf(-3.141592f + 2.f * 3.141592f * t) * spin_r;
+            target_pos.x += cos(-3.141592f + 2.f * 3.141592f * t) * spin_r;
+            target_pos.y += sin(-3.141592f + 2.f * 3.141592f * t) * spin_r;
 
         }
 
@@ -75,7 +82,7 @@ namespace autobot {
 
         const auto gamemode = (osu_GameMode_Player*)osu_data.running_gamemode[0];
 
-        if (gamemode->async_load_complete == 0 || gamemode->game->is_unsafe() || gamemode->hitobject_manager == nullptr)
+        if (gamemode->async_load_complete == 0 || gamemode->game->is_unsafe() || gamemode->hitobject_manager == 0)
             return;
 
         auto_bot(gamemode);
@@ -91,7 +98,7 @@ namespace autobot {
         menu.name = "Autobot"sv;
         menu.icon = FontAwesome::keyboard_o;
 
-        menu.colour = _col{ 16, 74, 168 , 255 };
+        menu.colour = _col{ 16, 74, 168, 255 };
 
         {
             menu_object mo{};
