@@ -10,7 +10,7 @@ BetterOsu - internal osu! mod, realtime difficulty changer for any beatmap, work
 
 ## Usage
 
-run osu!, then run your favorite injector, you may use the supplied one.
+run osu, then run the injector.
 mod ui should appear in top left corner of the osu! window, see [controls](#controls).  
 
 ### Controls
