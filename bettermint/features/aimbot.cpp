@@ -93,19 +93,10 @@ void update_aimbot(Circle &circle, const int32_t audio_time) {
             float slider_ball_x = *(float *)(animation_ptr + OSU_ANIMATION_SLIDER_BALL_X_OFFSET);
             float slider_ball_y = *(float *)(animation_ptr + OSU_ANIMATION_SLIDER_BALL_Y_OFFSET);
             target = Vector2<float>(slider_ball_x, slider_ball_y);
-
-            // If the slider is still in progress, move towards the slider ball
-            if (audio_time < circle.start_time) {
-                cursor_pos = moveTowards(cursor_pos, target, 500.0f * t);
-            } else {
-                // If the slider is completed, move towards the end point
-                target = playfield_to_screen(circle.end_position);
-                cursor_pos = moveTowards(cursor_pos, target, 500.0f * t);
-            }
-        } else {
-            // For circles, smoothly move towards the target
-            cursor_pos = moveTowards(cursor_pos, target, 500.0f * t);
         }
+
+        // Smoothly move towards the target based on the logic for circles and sliders
+        cursor_pos = moveTowards(cursor_pos, target, 500.0f * t);
     } else if (circle.type == HitObjectType::Spinner && audio_time >= circle.start_time) {
         // Logic for spinners
         auto &center = circle.position;
