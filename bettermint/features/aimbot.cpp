@@ -117,5 +117,8 @@ void update_aimbot(Circle &circle, const int32_t audio_time) {
         angle > 2 * PI ? angle = 0 : angle += cfg_spins_per_minute / three_pi * ImGui::GetIO().DeltaTime;
     }
 
+    // Smoothly interpolate between the current cursor position and the target position
+    cursor_pos = lerp(cursor_pos, target, 5.0f * t);
+
     move_mouse_to(cursor_pos.x, cursor_pos.y);
 }
