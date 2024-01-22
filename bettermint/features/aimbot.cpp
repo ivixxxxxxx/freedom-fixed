@@ -56,7 +56,7 @@ static inline void move_mouse_smoothly(const Vector2<float> &target, const Vecto
 
     // Calculate smooth movement
     Vector2<float> delta = target_on_screen - cursor_pos;
-    Vector2<float> step = delta * (t * 10.0f); // You can adjust the multiplier for speed
+    Vector2<float> step = delta * t; // Adjust the multiplier for speed
 
     Vector2<float> predicted_position = cursor_pos + step;
     move_mouse_to(predicted_position.x, predicted_position.y);
