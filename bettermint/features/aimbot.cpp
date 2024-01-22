@@ -70,8 +70,7 @@ void update_aimbot(Circle &circle, const int32_t audio_time) {
         float spin_variation = 0.1f;
         angle += cfg_spins_per_minute / (3 * PI) * ImGui::GetIO().DeltaTime + rand_range_f(-spin_variation, spin_variation);
     } else if (circle.type == HitObjectType::Slider && audio_time >= circle.start_time) {
-        // Logic for sliders (you can customize this part)
-        // Example: Move towards slider's end position
+        // Assuming 'slider_end_position' is a member of 'Circle'
         Vector2<float> slider_end = playfield_to_screen(circle.slider_end_position);
         cursor_pos = moveTowards(cursor_pos, slider_end, 500.0f * t);
     }
