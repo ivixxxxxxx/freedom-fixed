@@ -84,34 +84,37 @@ void update_relax(Circle &circle, const int32_t audio_time)
                 ImColor(0, 255, 255, 100));
         }
 
-        if (!circle.clicked && valid_timing && valid_position)
+        if (valid_timing && valid_position)
         {
-            if (rand_range_i(0, 1) >= 1)
-                cfg_relax_style = 'a';
-            else
-                cfg_relax_style = 'b';
-
-            current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
-
-            send_keyboard_input(current_click, 0);
-            FR_INFO_FMT("Relax hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
-            keyup_delay = rand_range_i(-30, 20) + rand_range_f(-0.5f, 0.5f); // Random delay between -30ms and +20ms with additional randomness
-
-            if (cfg_timewarp_enabled)
+            if (!circle.clicked)
             {
-                double timewarp_playback_rate_div_100 = cfg_timewarp_playback_rate / 100.0;
-                keyup_delay /= timewarp_playback_rate_div_100;
+                if (rand_range_i(0, 1) >= 1)
+                    cfg_relax_style = 'a';
+                else
+                    cfg_relax_style = 'b';
+
+                current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
+
+                send_keyboard_input(current_click, 0);
+                FR_INFO_FMT("Relax hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
+                keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
+
+                if (cfg_timewarp_enabled)
+                {
+                    double timewarp_playback_rate_div_100 = cfg_timewarp_playback_rate / 100.0;
+                    keyup_delay /= timewarp_playback_rate_div_100;
+                }
+                else if (circle.type == HitObjectType::Slider || circle.type == HitObjectType::Spinner)
+                {
+                    if (current_beatmap.mods & Mods::DoubleTime)
+                        keyup_delay /= 1.5;
+                    else if (current_beatmap.mods & Mods::HalfTime)
+                        keyup_delay /= 0.75;
+                }
+                keydown_time = ImGui::GetTime();
+                circle.clicked = true;
+                od_check_ms = .0f;
             }
-            else if (circle.type == HitObjectType::Slider || circle.type == HitObjectType::Spinner)
-            {
-                if (current_beatmap.mods & Mods::DoubleTime)
-                    keyup_delay /= 1.5;
-                else if (current_beatmap.mods & Mods::HalfTime)
-                    keyup_delay /= 0.75;
-            }
-            keydown_time = ImGui::GetTime();
-            circle.clicked = true;
-            od_check_ms = .0f;
         }
     }
     if (cfg_relax_lock && keydown_time && ((ImGui::GetTime() - keydown_time) * 1000.0 > keyup_delay))
