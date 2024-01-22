@@ -28,6 +28,29 @@ static inline T distance(const Vector2<T> &v1, const Vector2<T> &v2) {
     return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
 }
 
+static inline void move_mouse_smoothly(const Vector2<float> &target, const Vector2<float> &cursor_pos, float t) {
+    Vector2<float> target_on_screen = playfield_to_screen(target);
+
+    float movement_variation = 1.5f; // Adjust as needed
+    target_on_screen.x += rand_range_f(-movement_variation, movement_variation);
+    target_on_screen.y += rand_range_f(-movement_variation, movement_variation);
+
+    // Calculate smooth movement
+    Vector2<float> delta = target_on_screen - cursor_pos;
+    Vector2<float> step = delta * t; // Adjust the multiplier for speed
+
+    // Calculate the distance between current cursor position and target
+    float distance_to_target = distance(cursor_pos, target_on_screen);
+
+    // If the distance is greater than a threshold, move smoothly; otherwise, teleport
+    if (distance_to_target > 1.0f) {
+        Vector2<float> predicted_position = cursor_pos + step;
+        move_mouse_to(predicted_position.x, predicted_position.y);
+    } else {
+        move_mouse_to(target_on_screen.x, target_on_screen.y);
+    }
+}
+
 static inline Vector2<float> stableMousePosition() {
     Vector2<float> currentMousePos(.0f, .0f);
     uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
@@ -45,21 +68,6 @@ static inline Vector2<float> stableMousePosition() {
 
     lastMousePos = currentMousePos;
     return currentMousePos;
-}
-
-static inline void move_mouse_smoothly(const Vector2<float> &target, const Vector2<float> &cursor_pos, float t) {
-    Vector2<float> target_on_screen = playfield_to_screen(target);
-
-    float movement_variation = 1.5f; // Adjust as needed
-    target_on_screen.x += rand_range_f(-movement_variation, movement_variation);
-    target_on_screen.y += rand_range_f(-movement_variation, movement_variation);
-
-    // Calculate smooth movement
-    Vector2<float> delta = target_on_screen - cursor_pos;
-    Vector2<float> step = delta * t; // Adjust the multiplier for speed
-
-    Vector2<float> predicted_position = cursor_pos + step;
-    move_mouse_to(predicted_position.x, predicted_position.y);
 }
 
 void update_aimbot(Circle &circle, const int32_t audio_time) {
