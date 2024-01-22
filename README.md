@@ -1,6 +1,6 @@
-# BetterOsu
+# OsuAssistant
 
-BetterOsu - internal osu! mod, realtime difficulty changer for any beatmap, works online.  
+OsuAssist - internal osu! mod, realtime difficulty changer for any beatmap, works online.  
 
 
 ## Download
