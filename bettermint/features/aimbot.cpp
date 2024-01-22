@@ -55,7 +55,13 @@ void update_aimbot(Circle &circle, const int32_t audio_time) {
     Vector2<float> cursor_pos = stableMousePosition();
 
     if (circle.type == HitObjectType::Circle || circle.type == HitObjectType::Slider) {
-        Vector2<float> target = playfield_to_screen(circle.position);
+        Vector2<float> target;
+        if (circle.type == HitObjectType::Circle) {
+            target = playfield_to_screen(circle.position);
+        } else if (circle.type == HitObjectType::Slider) {
+            // For sliders, move towards the slider ball position
+            target = playfield_to_screen(Vector2<float>(circle.slider_ball_x, circle.slider_ball_y));
+        }
         cursor_pos = moveTowards(cursor_pos, target, 500.0f * t);
     } else if (circle.type == HitObjectType::Spinner && audio_time >= circle.start_time) {
         auto &center = circle.position;
