@@ -26,6 +26,13 @@ static inline Vector2<float> stableMousePosition() {
     return currentMousePos;
 }
 
+static inline Vector2<float> randomizePosition(const Vector2<float> &position, float variation) {
+    return Vector2<float>(
+        position.x + rand_range_f(-variation, variation),
+        position.y + rand_range_f(-variation, variation)
+    );
+}
+
 static inline Vector2<float> smoothCursorMovement(const Vector2<float> &current, const Vector2<float> &target, float t) {
     // Smoothly interpolate between current and target positions
     return Vector2<float>(
@@ -42,7 +49,7 @@ void update_aimbot(Circle &circle, const int32_t audio_time) {
     Vector2<float> cursor_pos = stableMousePosition();
 
     if (circle.type == HitObjectType::Circle) {
-        Vector2<float> target = playfield_to_screen(circle.position);
+        Vector2<float> target = playfield_to_screen(randomizePosition(circle.position, 5.0f)); // Adjust variation as needed
         cursor_pos = smoothCursorMovement(cursor_pos, target, t);
     } else if (circle.type == HitObjectType::Slider) {
         uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
@@ -57,11 +64,7 @@ void update_aimbot(Circle &circle, const int32_t audio_time) {
         float slider_ball_y = *(float *)(animation_ptr + OSU_ANIMATION_SLIDER_BALL_Y_OFFSET);
         Vector2<float> slider_ball(slider_ball_x, slider_ball_y);
 
-        float slider_variation = 5.0f;
-        slider_ball.x += rand_range_f(-slider_variation, slider_variation);
-        slider_ball.y += rand_range_f(-slider_variation, slider_variation);
-
-        Vector2<float> target = playfield_to_screen(slider_ball);
+        Vector2<float> target = playfield_to_screen(randomizePosition(slider_ball, 5.0f)); // Adjust variation as needed
         cursor_pos = smoothCursorMovement(cursor_pos, target, t);
     } else if (circle.type == HitObjectType::Spinner && audio_time >= circle.start_time) {
         auto &center = circle.position;
@@ -70,11 +73,7 @@ void update_aimbot(Circle &circle, const int32_t audio_time) {
         static float angle = .0f;
         Vector2<float> next_point_on_circle(center.x + radius * cosf(angle), center.y + radius * sinf(angle));
 
-        float spinner_variation = 10.0f;
-        next_point_on_circle.x += rand_range_f(-spinner_variation, spinner_variation);
-        next_point_on_circle.y += rand_range_f(-spinner_variation, spinner_variation);
-
-        Vector2<float> target = playfield_to_screen(next_point_on_circle);
+        Vector2<float> target = playfield_to_screen(randomizePosition(next_point_on_circle, 10.0f)); // Adjust variation as needed
         cursor_pos = smoothCursorMovement(cursor_pos, target, t);
 
         float spin_variation = 0.1f;
