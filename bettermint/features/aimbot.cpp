@@ -1,79 +1,114 @@
-#include "features/aimbot.h"
-#include <cmath>
-#include <cstdlib>
+#pragma once
 
-static float rand_range_f(float f_min, float f_max) {
-    float scale = rand() / (float)RAND_MAX;
-    return f_min + scale * (f_max - f_min);
-}
+namespace autobot {
 
-static constexpr float DEAD_ZONE_THRESHOLD = 1.0f;
+    constexpr static u32 MODULE_ID{ 1 };
 
-template <typename T>
-static inline T distance(const Vector2<T> &v1, const Vector2<T> &v2) {
-    return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
-}
+    u8 active{};
+    u32 last_top_note{};
 
-static inline Vector2<float> stableMousePosition() {
-    Vector2<float> currentMousePos(.0f, .0f);
-    uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
-    if (!osu_manager) return currentMousePos;
-    uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager + OSU_MANAGER_RULESET_PTR_OFFSET);
-    if (!osu_ruleset_ptr) return currentMousePos;
-    currentMousePos.x = *(float *)(osu_ruleset_ptr + OSU_RULESET_MOUSE_X_OFFSET);
-    currentMousePos.y = *(float *)(osu_ruleset_ptr + OSU_RULESET_MOUSE_Y_OFFSET);
+    void auto_bot(osu_GameMode_Player* gamemode) {
 
-    return currentMousePos;
-}
+        virtual_mouse.active = 0;
+        virtual_keyboard.active = 1;
 
-static inline Vector2<float> randomizePosition(const Vector2<float> &position, float variation) {
-    return Vector2<float>(
-        position.x + rand_range_f(-variation, variation),
-        position.y + rand_range_f(-variation, variation)
-    );
-}
+        const int time = *osu_data.time;
 
-static inline Vector2<float> moveTowards(const Vector2<float> &current, const Vector2<float> &target, float speed) {
-    // Move current position towards the target with a specified speed
-    float delta_x = target.x - current.x;
-    float delta_y = target.y - current.y;
-    float distance_to_target = std::sqrt(delta_x * delta_x + delta_y * delta_y);
+        const auto* hit_manager = gamemode->hitobject_manager;
 
-    if (distance_to_target <= speed) {
-        return target;
-    } else {
-        float scale = speed / distance_to_target;
-        return Vector2<float>(current.x + delta_x * scale, current.y + delta_y * scale);
-    }
-}
+        const int press_delta = hit_manager->hit_window_300 - 1;
 
-void update_aimbot(Circle &circle, const int32_t audio_time) {
-    if (!cfg_aimbot_lock)
-        return;
+        auto* top_note = hit_manager->get_top_note();
 
-    float t = cfg_fraction_modifier * ImGui::GetIO().DeltaTime;
-    Vector2<float> cursor_pos = stableMousePosition();
+        if (top_note == 0 || (press_delta + time - top_note->time[0]) < 0)
+            return;
 
-    if (circle.type == HitObjectType::Circle || circle.type == HitObjectType::Slider) {
-        Vector2<float> target = playfield_to_screen(circle.position);
-        cursor_pos = moveTowards(cursor_pos, target, 500.0f * t);
-    } else if (circle.type == HitObjectType::Spinner && audio_time >= circle.start_time) {
-        auto &center = circle.position;
-        constexpr float radius = 60.0f;
-        constexpr float PI = 3.14159f;
-        static float angle = .0f;
-        Vector2<float> next_point_on_circle(center.x + radius * cosf(angle), center.y + radius * sinf(angle));
+        vec2 target_pos{ top_note->pos };
 
-        Vector2<float> target = playfield_to_screen(next_point_on_circle);
-        cursor_pos = moveTowards(cursor_pos, target, 500.0f * t);
+        if (top_note->type & Slider) {
 
-        float spin_variation = 0.1f;
-        angle += cfg_spins_per_minute / (3 * PI) * ImGui::GetIO().DeltaTime + rand_range_f(-spin_variation, spin_variation);
-    } else if (circle.type == HitObjectType::Slider && audio_time >= circle.start_time) {
-        // Assuming 'slider_end_position' is a member of 'Circle'
-        Vector2<float> slider_end = playfield_to_screen(circle.slider_end_position);
-        cursor_pos = moveTowards(cursor_pos, slider_end, 500.0f * t);
+            auto* slider_ball = ((osu_Hitobject_SliderOsu*)top_note)->slider_ball;
+
+            if (slider_ball) {
+                target_pos.x = slider_ball->position.x;
+                target_pos.y = slider_ball->position.y;
+            }
+
+        }
+        else if (top_note->type & Spinner) {
+
+            constexpr static float spin_r = 0.001f;
+            const auto t = float(time & 63) / 63.f;
+
+            target_pos.x += cos(-3.141592f + 2.f * 3.141592f * t) * spin_r;
+            target_pos.y += sin(-3.141592f + 2.f * 3.141592f * t) * spin_r;
+
+        }
+
+        if (last_top_note != u32(top_note)) {
+
+            last_top_note = u32(top_note);
+
+            if (virtual_keyboard.K1) {
+                virtual_keyboard.K1 = 0;
+                virtual_keyboard.K2 = 1;
+            }
+            else {
+                virtual_keyboard.K1 = 1;
+                virtual_keyboard.K2 = 0;
+            }
+
+        }
+
+        virtual_mouse.active = 1;
+
+        virtual_mouse.pos = osu_window::field_to_display(target_pos);
+
     }
 
-    move_mouse_to(cursor_pos.x, cursor_pos.y);
+    void __fastcall update() {
+
+        if (active == 0 || *osu_data.play_mode != 0)
+            return;
+
+        const auto gamemode = (osu_GameMode_Player*)osu_data.running_gamemode[0];
+
+        if (gamemode->async_load_complete == 0 || gamemode->game->is_unsafe() || gamemode->hitobject_manager == 0)
+            return;
+
+        auto_bot(gamemode);
+
+    }
+
+    void __fastcall menu_init() {
+
+        auto& menu = AQM::module_menu[MODULE_ID];
+
+        menu.sprite_list.reserve(64);
+
+        menu.name = "Autobot"sv;
+        menu.icon = FontAwesome::keyboard_o;
+
+        menu.colour = _col{ 16, 74, 168 , 255 };
+
+        {
+            menu_object mo{};
+
+            mo.name = "Enabled"sv;
+            mo.type = menu_object_type::clicker_bool;
+            mo.clicker_bool.value = &active;
+
+            menu.menu_elements.push_back(mo);
+        }
+
+    }
+
+    const auto initialized = [] {
+
+        on_audio_tick_ingame[MODULE_ID] = update;
+        on_menu_init[MODULE_ID] = menu_init;
+
+        return 1;
+    }();
+
 }
