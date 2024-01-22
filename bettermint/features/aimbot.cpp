@@ -1,3 +1,5 @@
+#include "parse.h"
+#include "window.h"
 #include "features/aimbot.h"
 #include <cmath>
 #include <cstdlib>
