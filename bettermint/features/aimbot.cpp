@@ -66,7 +66,7 @@ static inline float lerp(float a, float b, float t) {
 
 static inline void move_mouse_to_target(const Vector2<float> &target, const Vector2<float> &cursor_pos, float t) {
 Vector2<float> target = target_on_screen;
-Vector2 predicted_position(lerp(cursor_pos, target, 5.0f * t));
+Vector2<float> predicted_position(lerpWithEase(cursor_pos.x, target.x, t), lerpWithEase(cursor_pos.y, target.y, t));
     move_mouse_to(predicted_position.x, predicted_position.y);
 }
 
