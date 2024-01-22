@@ -1,4 +1,3 @@
-#include "osu_types.h"
 #include "virtual_input.h"
 #include "osu_window.h"
 #include "osu_data.h"
