@@ -31,10 +31,6 @@ static inline T distance(const Vector2<T> &v1, const Vector2<T> &v2) {
 static inline void move_mouse_smoothly(const Vector2<float> &target, const Vector2<float> &cursor_pos, float t) {
     Vector2<float> target_on_screen = playfield_to_screen(target);
 
-    float movement_variation = 1.5f; // Adjust as needed
-    target_on_screen.x += rand_range_f(-movement_variation, movement_variation);
-    target_on_screen.y += rand_range_f(-movement_variation, movement_variation);
-
     // Calculate smooth movement
     Vector2<float> delta = target_on_screen - cursor_pos;
     Vector2<float> step = delta * t; // Adjust the multiplier for speed
