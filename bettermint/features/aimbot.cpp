@@ -2,6 +2,8 @@
 #include <cmath>
 #include <cstdlib>
 
+// Existing code...
+
 static float rand_range_f(float f_min, float f_max) {
     float scale = rand() / (float)RAND_MAX;
     return f_min + scale * (f_max - f_min);
@@ -15,7 +17,6 @@ static inline T distance(const Vector2<T> &v1, const Vector2<T> &v2) {
 }
 
 static inline Vector2<float> stableMousePosition() {
-    // unchanged
     Vector2<float> currentMousePos(.0f, .0f);
     uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
     if (!osu_manager) return currentMousePos;
@@ -28,7 +29,6 @@ static inline Vector2<float> stableMousePosition() {
 }
 
 static inline Vector2<float> randomizePosition(const Vector2<float> &position, float variation) {
-    // unchanged
     return Vector2<float>(
         position.x + rand_range_f(-variation, variation),
         position.y + rand_range_f(-variation, variation)
@@ -36,7 +36,7 @@ static inline Vector2<float> randomizePosition(const Vector2<float> &position, f
 }
 
 static inline Vector2<float> moveTowards(const Vector2<float> &current, const Vector2<float> &target, float speed) {
-    // unchanged
+    // Move current position towards the target with a specified speed
     float delta_x = target.x - current.x;
     float delta_y = target.y - current.y;
     float distance_to_target = std::sqrt(delta_x * delta_x + delta_y * delta_y);
@@ -50,7 +50,6 @@ static inline Vector2<float> moveTowards(const Vector2<float> &current, const Ve
 }
 
 static inline Vector2<float> mouse_position() {
-    // unchanged
     Vector2<float> mouse_pos(.0f, .0f);
     uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
     if (!osu_manager) return mouse_pos;
@@ -62,12 +61,10 @@ static inline Vector2<float> mouse_position() {
 }
 
 static inline float lerp(float a, float b, float t) {
-    // unchanged
     return a + t * (b - a);
 }
 
 static inline void move_mouse_to_target(const Vector2<float> &target, const Vector2<float> &cursor_pos, float t) {
-    // unchanged
     Vector2 target_on_screen = playfield_to_screen(target);
     Vector2 predicted_position(lerp(cursor_pos.x, target_on_screen.x, t), lerp(cursor_pos.y, target_on_screen.y, t));
     move_mouse_to(predicted_position.x, predicted_position.y);
@@ -96,10 +93,19 @@ void update_aimbot(Circle &circle, const int32_t audio_time) {
             float slider_ball_x = *(float *)(animation_ptr + OSU_ANIMATION_SLIDER_BALL_X_OFFSET);
             float slider_ball_y = *(float *)(animation_ptr + OSU_ANIMATION_SLIDER_BALL_Y_OFFSET);
             target = Vector2<float>(slider_ball_x, slider_ball_y);
-        }
 
-        // Smoothly move towards the target based on the logic for circles and sliders
-        cursor_pos = moveTowards(cursor_pos, target, 500.0f * t);
+            // If the slider is still in progress, move towards the slider ball
+            if (audio_time < circle.start_time) {
+                cursor_pos = moveTowards(cursor_pos, target, 500.0f * t);
+            } else {
+                // If the slider is completed, move towards the end point
+                target = playfield_to_screen(circle.end_position);
+                cursor_pos = moveTowards(cursor_pos, target, 500.0f * t);
+            }
+        } else {
+            // For circles, smoothly move towards the target
+            cursor_pos = moveTowards(cursor_pos, target, 500.0f * t);
+        }
     } else if (circle.type == HitObjectType::Spinner && audio_time >= circle.start_time) {
         // Logic for spinners
         auto &center = circle.position;
