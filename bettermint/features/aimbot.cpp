@@ -34,7 +34,6 @@ static inline Vector2<float> randomizePosition(const Vector2<float> &position, f
 }
 
 static inline Vector2<float> moveTowards(const Vector2<float> &current, const Vector2<float> &target, float speed) {
-    // Move current position towards the target with a specified speed
     float delta_x = target.x - current.x;
     float delta_y = target.y - current.y;
     float distance_to_target = std::sqrt(delta_x * delta_x + delta_y * delta_y);
