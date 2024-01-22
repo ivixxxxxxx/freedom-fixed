@@ -33,12 +33,18 @@ static inline Vector2<float> randomizePosition(const Vector2<float> &position, f
     );
 }
 
-static inline Vector2<float> smoothCursorMovement(const Vector2<float> &current, const Vector2<float> &target, float t) {
-    // Smoothly interpolate between current and target positions
-    return Vector2<float>(
-        current.x + (target.x - current.x) * t,
-        current.y + (target.y - current.y) * t
-    );
+static inline Vector2<float> moveTowards(const Vector2<float> &current, const Vector2<float> &target, float speed) {
+    // Move current position towards the target with a specified speed
+    float delta_x = target.x - current.x;
+    float delta_y = target.y - current.y;
+    float distance_to_target = std::sqrt(delta_x * delta_x + delta_y * delta_y);
+
+    if (distance_to_target <= speed) {
+        return target;
+    } else {
+        float scale = speed / distance_to_target;
+        return Vector2<float>(current.x + delta_x * scale, current.y + delta_y * scale);
+    }
 }
 
 void update_aimbot(Circle &circle, const int32_t audio_time) {
@@ -50,7 +56,7 @@ void update_aimbot(Circle &circle, const int32_t audio_time) {
 
     if (circle.type == HitObjectType::Circle) {
         Vector2<float> target = playfield_to_screen(randomizePosition(circle.position, 5.0f)); // Adjust variation as needed
-        cursor_pos = smoothCursorMovement(cursor_pos, target, t);
+        cursor_pos = moveTowards(cursor_pos, target, 500.0f * t); // Adjust speed as needed
     } else if (circle.type == HitObjectType::Slider) {
         uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
         if (!osu_manager) return;
@@ -65,7 +71,7 @@ void update_aimbot(Circle &circle, const int32_t audio_time) {
         Vector2<float> slider_ball(slider_ball_x, slider_ball_y);
 
         Vector2<float> target = playfield_to_screen(randomizePosition(slider_ball, 5.0f)); // Adjust variation as needed
-        cursor_pos = smoothCursorMovement(cursor_pos, target, t);
+        cursor_pos = moveTowards(cursor_pos, target, 500.0f * t); // Adjust speed as needed
     } else if (circle.type == HitObjectType::Spinner && audio_time >= circle.start_time) {
         auto &center = circle.position;
         constexpr float radius = 60.0f;
@@ -74,7 +80,7 @@ void update_aimbot(Circle &circle, const int32_t audio_time) {
         Vector2<float> next_point_on_circle(center.x + radius * cosf(angle), center.y + radius * sinf(angle));
 
         Vector2<float> target = playfield_to_screen(randomizePosition(next_point_on_circle, 10.0f)); // Adjust variation as needed
-        cursor_pos = smoothCursorMovement(cursor_pos, target, t);
+        cursor_pos = moveTowards(cursor_pos, target, 500.0f * t); // Adjust speed as needed
 
         float spin_variation = 0.1f;
         angle += cfg_spins_per_minute / (3 * PI) * ImGui::GetIO().DeltaTime + rand_range_f(-spin_variation, spin_variation);
