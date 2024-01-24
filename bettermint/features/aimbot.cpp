@@ -66,7 +66,7 @@ namespace aimbot {
 
         static Vector2<float> lastMousePos = currentMousePos;
 
-        if (distance(currentMousePos, lastMousePos) < DEAD_ZONE_THRESHOLD) {
+if (aimbot::distance<float>(currentMousePos, lastMousePos) < DEAD_ZONE_THRESHOLD) {
             return lastMousePos;
         }
 
