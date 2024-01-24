@@ -1,7 +1,7 @@
 #include "ui.h"
 
 ImFont *font = 0;
-char song_name_u8[256] = "OsuAssist " FR_VERSION " is Loading!";
+char song_name_u8[256] = "OsuAssist" FR_VERSION " is Loading!";
 bool show_debug_log_window = false;
 
 HHOOK oWndProc;
