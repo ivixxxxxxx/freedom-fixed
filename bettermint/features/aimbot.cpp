@@ -3,11 +3,16 @@
 #include "features/aimbot.h"
 #include <cmath>
 #include <cstdlib>
+#include <cstdint> // for uintptr_t
+#include "Vector.h" // assuming there is a Vector2 class
+
+using u32 = std::uint32_t;
+
+constexpr float DEAD_ZONE_THRESHOLD = 0.5f; // Adjust as needed
 
 namespace aimbot {
 
     constexpr static u32 MODULE_ID{ 1 };
-
     u8 active{};
     u32 last_top_note{};
 
