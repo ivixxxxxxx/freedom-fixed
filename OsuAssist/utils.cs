@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 
-namespace bettermint
+namespace osuassist
 {
     public class Utils
     {
