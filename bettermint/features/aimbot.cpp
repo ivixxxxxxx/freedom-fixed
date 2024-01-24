@@ -14,7 +14,7 @@ constexpr float DEAD_ZONE_THRESHOLD = 0.5f; // Adjust as needed
 namespace aimbot {
 
     constexpr static u32 MODULE_ID{ 1 };
-    u8 active{};
+    uint8_t active{};
     u32 last_top_note{};
 
     static float rand_range_f(float f_min, float f_max) {
