@@ -110,13 +110,18 @@ inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<flo
     target_on_screen.x += rand_range_f(-movement_variation, movement_variation);
     target_on_screen.y += rand_range_f(-movement_variation, movement_variation);
 
-    // Add dancing effect to cursor movement
-    float dance_amplitude = 0.0f; // Adjust as needed
+    // Add dancing effect to cursor movement with a curve
+    float dance_amplitude = 1.0f; // Adjust as needed
     float dance_frequency = 0.0f;  // Adjust as needed
     float dance_offset = dance_amplitude * sinf(2.0f * MY_PI * dance_frequency * t);
 
-    Vector2 predicted_position(lerpWithEase(cursor_pos.x, target_on_screen.x + dance_offset, t),
-        lerpWithEase(cursor_pos.y, target_on_screen.y + dance_offset, t));
+    // Create a curved path using the sine function
+    float curve_amplitude = 5.0f; // Adjust as needed
+    float curve_frequency = 0.0f;   // Adjust as needed
+    float curve_offset = curve_amplitude * sinf(2.0f * MY_PI * curve_frequency * t);
+
+    Vector2 predicted_position(lerpWithEase(cursor_pos.x, target_on_screen.x + dance_offset + curve_offset, t),
+        lerpWithEase(cursor_pos.y, target_on_screen.y + dance_offset + curve_offset, t));
 
     move_mouse_to(predicted_position.x, predicted_position.y);
 }
