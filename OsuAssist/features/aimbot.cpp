@@ -22,10 +22,6 @@ inline float lerpWithEase(float a, float b, float t);
 template <typename T>
 T distance(const Vector2<T>& v1, const Vector2<T>& v2);
 
-#ifndef MY_PI
-constexpr float MY_PI = 3.14159f;
-#endif
-
 constexpr float DEAD_ZONE_THRESHOLD = 0.5f; // Adjust as needed
 
 namespace aimbot {
@@ -78,15 +74,6 @@ namespace aimbot {
             return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
         }
 
-template <typename T>
-Vector2<T> normalize(const Vector2<T>& vector) {
-    T length = std::sqrt(vector.x * vector.x + vector.y * vector.y);
-    if (length != 0.0f) {
-        return Vector2<T>(vector.x / length, vector.y / length);
-    }
-    return Vector2<T>(0.0f, 0.0f);  // Avoid division by zero
-}
-
         // Add explicit instantiation for float
         template <>
         float distance(const Vector2<float>& v1, const Vector2<float>& v2) {
@@ -112,20 +99,17 @@ if (aimbot::distance<float>(currentMousePos, lastMousePos) < DEAD_ZONE_THRESHOLD
         return currentMousePos;
     }
 
-inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t) {
-    Vector2 target_on_screen = playfield_to_screen(target);
+    inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t) {
+        Vector2 target_on_screen = playfield_to_screen(target);
 
-    // Calculate the direction vector
-    Vector2 direction = normalize(target_on_screen - cursor_pos);
+        float movement_variation = 0.0f; // Adjust as needed
+        target_on_screen.x += rand_range_f(-movement_variation, movement_variation);
+        target_on_screen.y += rand_range_f(-movement_variation, movement_variation);
 
-    float movement_speed = 200.0f; // Adjust as needed
-
-    // Calculate the new cursor position based on speed and time
-    Vector2 new_cursor_pos = cursor_pos + direction * movement_speed * t;
-
-    // Update the cursor position
-    move_mouse_to(new_cursor_pos.x, new_cursor_pos.y);
-}
+        Vector2 predicted_position(lerpWithEase(cursor_pos.x, target_on_screen.x, t),
+            lerpWithEase(cursor_pos.y, target_on_screen.y, t));
+        move_mouse_to(predicted_position.x, predicted_position.y);
+    }
 
     void update_aimbot(Circle& circle, const int32_t audio_time) {
         if (!cfg_aimbot_lock)
