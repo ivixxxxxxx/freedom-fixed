@@ -1,3 +1,4 @@
+#define PI 3.14159f
 #include "Vector.h"
 #include "hitobject.h"
 #include <cmath>
