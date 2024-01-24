@@ -2,90 +2,109 @@
 #include <cmath>
 #include <cstdlib>
 
-// Constants
-constexpr static float MOVEMENT_VARIATION = 1.5f;
-constexpr static float SLIDER_VARIATION = 5.0f;
-constexpr static float SPINNER_VARIATION = 10.0f;
-constexpr static float SPIN_VARIATION = 0.1f;
-
-// Function to calculate distance between two points
+// Assuming Vector2 is defined somewhere
 template <typename T>
-static inline T calculateDistance(const Vector2<T> &v1, const Vector2<T> &v2) {
+struct Vector2 {
+    T x, y;
+};
+
+static float rand_range_f(float f_min, float f_max) {
+    float scale = rand() / (float)RAND_MAX;
+    return f_min + scale * (f_max - f_min);
+}
+
+static inline float smoothStep(float edge0, float edge1, float x) {
+    float t = fmaxf(0.0, fminf(1.0, (x - edge0) / (edge1 - edge0)));
+    return t * t * (3.0 - 2.0 * t);
+}
+
+static inline float easeInOutQuad(float t) {
+    return t < 0.5 ? 2.0 * t * t : 1.0 - pow(-2.0 * t + 2.0, 2.0) / 2.0;
+}
+
+static inline float lerpWithEase(float a, float b, float t) {
+    t = smoothStep(0.0f, 1.0f, t);
+    return a + t * (b - a);
+}
+
+static constexpr float DEAD_ZONE_THRESHOLD = 1.0f;
+
+template <typename T>
+static inline T distance(const Vector2<T> &v1, const Vector2<T> &v2) {
     return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
 }
 
-// Function to move mouse to the target with variations
-static inline void moveMouseToTargetWithVariation(const Vector2<float> &target, const Vector2<float> &cursorPos, float t, float variation) {
-    Vector2 targetOnScreen = playfield_to_screen(target);
-
-    targetOnScreen.x += rand_range_f(-variation, variation);
-    targetOnScreen.y += rand_range_f(-variation, variation);
-
-    Vector2 predictedPosition(lerpWithEase(cursorPos.x, targetOnScreen.x, t), lerpWithEase(cursorPos.y, targetOnScreen.y, t));
-    move_mouse_to(predictedPosition.x, predictedPosition.y);
-}
-
-// Function to update aimbot for circles
-void updateAimbotForCircle(Circle &circle, const Vector2<float> &cursorPos, float t) {
-    moveMouseToTargetWithVariation(circle.position, cursorPos, t, MOVEMENT_VARIATION);
-}
-
-// Function to update aimbot for sliders
-void updateAimbotForSlider(Circle &circle, const Vector2<float> &cursorPos, float t) {
+static inline Vector2<float> stableMousePosition() {
+    Vector2<float> currentMousePos(.0f, .0f);
     uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
-    if (!osu_manager) return;
-    uintptr_t hitManagerPtr = *(uintptr_t *)(osu_manager + OSU_MANAGER_HIT_MANAGER_OFFSET);
-    if (!hitManagerPtr) return;
-    uintptr_t hitObjectsListPtr = *(uintptr_t *)(hitManagerPtr + OSU_HIT_MANAGER_HIT_OBJECTS_LIST_OFFSET);
-    uintptr_t hitObjectsListItemsPtr = *(uintptr_t *)(hitObjectsListPtr + 0x4);
-    uintptr_t hitObjectPtr = *(uintptr_t *)(hitObjectsListItemsPtr + 0x8 + 0x4 * current_beatmap.hit_object_idx);
-    uintptr_t animationPtr = *(uintptr_t *)(hitObjectPtr + OSU_HIT_OBJECT_ANIMATION_OFFSET);
-    float sliderBallX = *(float *)(animationPtr + OSU_ANIMATION_SLIDER_BALL_X_OFFSET);
-    float sliderBallY = *(float *)(animationPtr + OSU_ANIMATION_SLIDER_BALL_Y_OFFSET);
-    Vector2 sliderBall(sliderBallX, sliderBallY);
+    if (!osu_manager) return currentMousePos;
+    uintptr_t osu_ruleset_ptr = *(uintptr_t *)(osu_manager + OSU_MANAGER_RULESET_PTR_OFFSET);
+    if (!osu_ruleset_ptr) return currentMousePos;
+    currentMousePos.x = *(float *)(osu_ruleset_ptr + OSU_RULESET_MOUSE_X_OFFSET);
+    currentMousePos.y = *(float *)(osu_ruleset_ptr + OSU_RULESET_MOUSE_Y_OFFSET);
 
-    moveMouseToTargetWithVariation(sliderBall, cursorPos, t, SLIDER_VARIATION);
+    static Vector2<float> lastMousePos = currentMousePos;
+
+    if (distance(currentMousePos, lastMousePos) < DEAD_ZONE_THRESHOLD) {
+        return lastMousePos;
+    }
+
+    lastMousePos = currentMousePos;
+    return currentMousePos;
 }
 
-// Function to update aimbot for spinners
-void updateAimbotForSpinner(Circle &circle, const Vector2<float> &cursorPos, float t, int32_t audioTime) {
-    auto &center = circle.position;
-    constexpr float radius = 60.0f;
-    constexpr float PI = 3.14159f;
-    static float angle = .0f;
-    Vector2 nextPointOnCircle(center.x + radius * cosf(angle), center.y + radius * sinf(angle));
+static inline void move_mouse_to_target(const Vector2<float> &target, const Vector2<float> &cursor_pos, float t) {
+    Vector2<float> target_on_screen = playfield_to_screen(target);
 
-    moveMouseToTargetWithVariation(nextPointOnCircle, cursorPos, t, SPINNER_VARIATION);
+    float movement_variation = 1.5f; // Adjust as needed
+    target_on_screen.x += rand_range_f(-movement_variation, movement_variation);
+    target_on_screen.y += rand_range_f(-movement_variation, movement_variation);
 
-    float spinVariation = 0.1f;
-    angle += cfg_spins_per_minute / (3 * PI) * ImGui::GetIO().DeltaTime + rand_range_f(-spinVariation, spinVariation);
+    Vector2<float> predicted_position(lerpWithEase(cursor_pos.x, target_on_screen.x, t), lerpWithEase(cursor_pos.y, target_on_screen.y, t));
+    move_mouse_to(predicted_position.x, predicted_position.y);
 }
 
-// Main update aimbot function
-void updateAimbot(Circle &circle, const int32_t audioTime) {
+void update_aimbot(Circle &circle, const int32_t audio_time) {
     if (!cfg_aimbot_lock)
         return;
 
     float t = cfg_fraction_modifier * ImGui::GetIO().DeltaTime;
-    Vector2<float> cursorPos = stableMousePosition();
+    Vector2<float> cursor_pos = stableMousePosition();
 
-    switch (circle.type) {
-        case HitObjectType::Circle:
-            updateAimbotForCircle(circle, cursorPos, t);
-            break;
+    if (circle.type == HitObjectType::Circle) {
+        move_mouse_to_target(circle.position, cursor_pos, t);
+    } else if (circle.type == HitObjectType::Slider) {
+        uintptr_t osu_manager = *(uintptr_t *)(osu_manager_ptr);
+        if (!osu_manager) return;
+        uintptr_t hit_manager_ptr = *(uintptr_t *)(osu_manager + OSU_MANAGER_HIT_MANAGER_OFFSET);
+        if (!hit_manager_ptr) return;
+        uintptr_t hit_objects_list_ptr = *(uintptr_t *)(hit_manager_ptr + OSU_HIT_MANAGER_HIT_OBJECTS_LIST_OFFSET);
+        uintptr_t hit_objects_list_items_ptr = *(uintptr_t *)(hit_objects_list_ptr + 0x4);
+        uintptr_t hit_object_ptr = *(uintptr_t *)(hit_objects_list_items_ptr + 0x8 + 0x4 * current_beatmap.hit_object_idx);
+        uintptr_t animation_ptr = *(uintptr_t *)(hit_object_ptr + OSU_HIT_OBJECT_ANIMATION_OFFSET);
+        float slider_ball_x = *(float *)(animation_ptr + OSU_ANIMATION_SLIDER_BALL_X_OFFSET);
+        float slider_ball_y = *(float *)(animation_ptr + OSU_ANIMATION_SLIDER_BALL_Y_OFFSET);
+        Vector2<float> slider_ball(slider_ball_x, slider_ball_y);
 
-        case HitObjectType::Slider:
-            updateAimbotForSlider(circle, cursorPos, t);
-            break;
+        float slider_variation = 5.0f;
+        slider_ball.x += rand_range_f(-slider_variation, slider_variation);
+        slider_ball.y += rand_range_f(-slider_variation, slider_variation);
 
-        case HitObjectType::Spinner:
-            if (audioTime >= circle.start_time)
-                updateAimbotForSpinner(circle, cursorPos, t, audioTime);
-            break;
+        move_mouse_to_target(slider_ball, cursor_pos, t);
+    } else if (circle.type == HitObjectType::Spinner && audio_time >= circle.start_time) {
+        auto &center = circle.position;
+        constexpr float radius = 60.0f;
+        constexpr float PI = 3.14159f;
+        static float angle = .0f;
+        Vector2<float> next_point_on_circle(center.x + radius * cosf(angle), center.y + radius * sinf(angle));
 
-        // Add more cases if needed
+        float spinner_variation = 10.0f;
+        next_point_on_circle.x += rand_range_f(-spinner_variation, spinner_variation);
+        next_point_on_circle.y += rand_range_f(-spinner_variation, spinner_variation);
 
-        default:
-            break;
+        move_mouse_to_target(next_point_on_circle, cursor_pos, t);
+
+        float spin_variation = 0.1f;
+        angle += cfg_spins_per_minute / (3 * PI) * ImGui::GetIO().DeltaTime + rand_range_f(-spin_variation, spin_variation);
     }
 }
