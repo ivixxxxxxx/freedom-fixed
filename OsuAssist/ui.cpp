@@ -1,7 +1,7 @@
 #include "ui.h"
 
 ImFont *font = 0;
-char song_name_u8[256] = "BetterMint " FR_VERSION " is Loading!";
+char song_name_u8[256] = "OsuAssist " FR_VERSION " is Loading!";
 bool show_debug_log_window = false;
 
 HHOOK oWndProc;
@@ -463,9 +463,9 @@ void update_ui()
         }
         if (selected_tab == MenuTab::About)
         {
-            ImGui::Text("BetterMint " FR_VERSION);
+            ImGui::Text("OsuAssist " FR_VERSION);
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
-            ImGui::Text("We love the taste of Mints");
+            ImGui::Text("We love iVix for updating this cheat 24/7");
             ImGui::Text("@mrflashstudio");
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
             ImGui::PushItemWidth(ImGui::CalcTextSize("OsuAssist").x + 10.f);
