@@ -24,6 +24,8 @@ T distance(const Vector2<T>& v1, const Vector2<T>& v2);
 
 constexpr float MY_PI = M_PI;
 
+constexpr float MY_PI = 3.14159f;
+
 constexpr float DEAD_ZONE_THRESHOLD = 0.5f; // Adjust as needed
 
 namespace aimbot {
