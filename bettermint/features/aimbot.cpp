@@ -78,6 +78,15 @@ namespace aimbot {
             return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
         }
 
+template <typename T>
+Vector2<T> normalize(const Vector2<T>& vector) {
+    T length = std::sqrt(vector.x * vector.x + vector.y * vector.y);
+    if (length != 0.0f) {
+        return Vector2<T>(vector.x / length, vector.y / length);
+    }
+    return Vector2<T>(0.0f, 0.0f);  // Avoid division by zero
+}
+
         // Add explicit instantiation for float
         template <>
         float distance(const Vector2<float>& v1, const Vector2<float>& v2) {
