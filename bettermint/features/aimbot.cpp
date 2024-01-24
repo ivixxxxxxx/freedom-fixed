@@ -97,6 +97,7 @@ float calculate_distance(const Vector2<float>& v1, const Vector2<float>& v2) {
 }
 
 
+
     inline Vector2<float> stableMousePosition() {
         Vector2<float> currentMousePos(.0f, .0f);
         uintptr_t osu_manager = *(uintptr_t*)(osu_manager_ptr);
