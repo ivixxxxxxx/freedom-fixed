@@ -41,13 +41,14 @@ namespace aimbot {
 
     inline Vector2<float> stableMousePosition();
 
-inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t, float stableMovement) {
+inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t) {
     Vector2<float> smoothed_position(
         lerpWithEase(cursor_pos.x, target.x, t),
         lerpWithEase(cursor_pos.y, target.y, t)
     );
 
     // Apply stable movement
+    float stableMovement = 1.5f; // Adjust as needed
     smoothed_position.x += rand_range_f(-stableMovement, stableMovement);
     smoothed_position.y += rand_range_f(-stableMovement, stableMovement);
 
