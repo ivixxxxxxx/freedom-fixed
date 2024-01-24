@@ -39,6 +39,5 @@ jobs:
         with:
           name: osuassist
           path: |
-            osuassist_injector.exe
             osuassist.dll
             config.ini
