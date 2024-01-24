@@ -22,9 +22,9 @@ inline float lerpWithEase(float a, float b, float t);
 template <typename T>
 T distance(const Vector2<T>& v1, const Vector2<T>& v2);
 
-constexpr float MY_PI = M_PI;
-
+#ifndef MY_PI
 constexpr float MY_PI = 3.14159f;
+#endif
 
 constexpr float DEAD_ZONE_THRESHOLD = 0.5f; // Adjust as needed
 
