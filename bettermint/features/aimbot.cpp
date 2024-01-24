@@ -99,17 +99,23 @@ if (aimbot::distance<float>(currentMousePos, lastMousePos) < DEAD_ZONE_THRESHOLD
         return currentMousePos;
     }
 
-    inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t) {
-        Vector2 target_on_screen = playfield_to_screen(target);
+inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t) {
+    Vector2 target_on_screen = playfield_to_screen(target);
 
-        float movement_variation = 0.0f; // Adjust as needed
-        target_on_screen.x += rand_range_f(-movement_variation, movement_variation);
-        target_on_screen.y += rand_range_f(-movement_variation, movement_variation);
+    float movement_variation = 0.0f; // Adjust as needed
+    target_on_screen.x += rand_range_f(-movement_variation, movement_variation);
+    target_on_screen.y += rand_range_f(-movement_variation, movement_variation);
 
-        Vector2 predicted_position(lerpWithEase(cursor_pos.x, target_on_screen.x, t),
-            lerpWithEase(cursor_pos.y, target_on_screen.y, t));
-        move_mouse_to(predicted_position.x, predicted_position.y);
-    }
+    // Add dancing effect to cursor movement
+    float dance_amplitude = 10.0f; // Adjust as needed
+    float dance_frequency = 2.0f;  // Adjust as needed
+    float dance_offset = dance_amplitude * sinf(2.0f * PI * dance_frequency * t);
+
+    Vector2 predicted_position(lerpWithEase(cursor_pos.x, target_on_screen.x + dance_offset, t),
+        lerpWithEase(cursor_pos.y, target_on_screen.y + dance_offset, t));
+
+    move_mouse_to(predicted_position.x, predicted_position.y);
+}
 
     void update_aimbot(Circle& circle, const int32_t audio_time) {
         if (!cfg_aimbot_lock)
