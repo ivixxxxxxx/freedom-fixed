@@ -48,6 +48,10 @@ template <typename T>
 T aimbot::distance(const Vector2<T>& v1, const Vector2<T>& v2) {
     return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
 }
+
+// Add explicit instantiation for float
+template float aimbot::distance<float>(const Vector2<float>&, const Vector2<float>&);
+
     inline Vector2<float> stableMousePosition() {
         Vector2<float> currentMousePos(.0f, .0f);
         uintptr_t osu_manager = *(uintptr_t*)(osu_manager_ptr);
