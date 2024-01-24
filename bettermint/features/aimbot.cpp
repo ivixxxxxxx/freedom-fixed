@@ -12,7 +12,7 @@ using u32 = std::uint32_t;
 constexpr float DEAD_ZONE_THRESHOLD = 0.5f; // Adjust as needed
 
 namespace aimbot {
-
+    void update_aimbot(Circle& circle, int value) {
     constexpr static u32 MODULE_ID{ 1 };
     uint8_t active{};
     u32 last_top_note{};
@@ -119,4 +119,4 @@ namespace aimbot {
         }
     }
 
-}  // namespace aimbot
+}
