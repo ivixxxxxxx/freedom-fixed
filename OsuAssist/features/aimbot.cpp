@@ -102,7 +102,7 @@ if (aimbot::distance<float>(currentMousePos, lastMousePos) < DEAD_ZONE_THRESHOLD
     inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t) {
         Vector2 target_on_screen = playfield_to_screen(target);
 
-        float movement_variation = 20.0f; // Adjust as needed
+        float movement_variation = 0.0f; // Adjust as needed
         target_on_screen.x += rand_range_f(-movement_variation, movement_variation);
         target_on_screen.y += rand_range_f(-movement_variation, movement_variation);
 
@@ -134,7 +134,7 @@ if (aimbot::distance<float>(currentMousePos, lastMousePos) < DEAD_ZONE_THRESHOLD
             float slider_ball_y = *(float*)(animation_ptr + OSU_ANIMATION_SLIDER_BALL_Y_OFFSET);
             Vector2 slider_ball(slider_ball_x, slider_ball_y);
 
-            float slider_variation = 5.0f;
+            float slider_variation = 0.0f;
             slider_ball.x += rand_range_f(-slider_variation, slider_variation);
             slider_ball.y += rand_range_f(-slider_variation, slider_variation);
 
