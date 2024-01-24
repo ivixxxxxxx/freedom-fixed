@@ -42,18 +42,23 @@ namespace aimbot {
     inline Vector2<float> stableMousePosition();
 
 inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t) {
+    // Apply smooth movement to the cursor
     Vector2<float> smoothed_position(
         lerpWithEase(cursor_pos.x, target.x, t),
         lerpWithEase(cursor_pos.y, target.y, t)
     );
 
-    // Apply stable movement
-    float stableMovement = 1.5f; // Adjust as needed
-    smoothed_position.x += rand_range_f(-stableMovement, stableMovement);
-    smoothed_position.y += rand_range_f(-stableMovement, stableMovement);
+    // Add some randomness to cursor movement only if the distance is above a threshold
+    constexpr float DISTANCE_THRESHOLD = 1.0f;
+    if (distance(cursor_pos, target) > DISTANCE_THRESHOLD) {
+        float movement_variation = 1.5f; // Adjust as needed
+        smoothed_position.x += rand_range_f(-movement_variation, movement_variation);
+        smoothed_position.y += rand_range_f(-movement_variation, movement_variation);
+    }
 
     move_mouse_to(smoothed_position.x, smoothed_position.y);
 }
+
 
     void update_aimbot(Circle& circle, const int32_t audio_time);
 }
