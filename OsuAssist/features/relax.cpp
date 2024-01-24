@@ -147,14 +147,4 @@ void update_relax(Circle &circle, const int32_t audio_time)
         }
     }
 }
-    if (cfg_relax_lock && keydown_time && ((ImGui::GetTime() - keydown_time) * 1000.0 > keyup_delay))
-    {
-        keydown_time = 0.0;
-        send_keyboard_input(current_click, KEYEVENTF_KEYUP);
-    }
-}
 
-void relax_on_beatmap_load()
-{
-    current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
-}
