@@ -24,7 +24,9 @@ T distance(const Vector2<T>& v1, const Vector2<T>& v2);
 
 // Explicit instantiation for float
 template <>
-float distance(const Vector2<float>& v1, const Vector2<float>& v2);
+float distance(const Vector2<float>& v1, const Vector2<float>& v2) {
+    return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
+}
 
 constexpr float DEAD_ZONE_THRESHOLD = 0.5f; // Adjust as needed
 
@@ -39,7 +41,9 @@ namespace aimbot {
     T distance(const Vector2<T>& v1, const Vector2<T>& v2);
 
     template <>
-    float distance(const Vector2<float>& v1, const Vector2<float>& v2);
+    float distance(const Vector2<float>& v1, const Vector2<float>& v2) {
+        return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
+    }
 
     inline Vector2<float> stableMousePosition();
 
