@@ -6,11 +6,6 @@
 
 int main() {
 
-    constexpr static u32 MODULE_ID{ 1 };
-
-    u8 active{};
-    u32 last_top_note{};
-
     static float rand_range_f(float f_min, float f_max) {
         float scale = rand() / (float)RAND_MAX;
         return f_min + scale * (f_max - f_min);
