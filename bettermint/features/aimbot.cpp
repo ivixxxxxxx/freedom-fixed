@@ -19,7 +19,7 @@ T distance(const Vector2<T>& v1, const Vector2<T>& v2);
 constexpr float DEAD_ZONE_THRESHOLD = 0.5f; // Adjust as needed
 
 namespace aimbot {
-
+    void update_aimbot(Circle& circle, int value) {
     // Fixed rand_range_f definition
     float rand_range_f(float f_min, float f_max) {
         float scale = rand() / static_cast<float>(RAND_MAX);
