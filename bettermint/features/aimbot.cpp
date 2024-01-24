@@ -4,7 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 
-namespace aimbot {
+int main() {
 
     constexpr static u32 MODULE_ID{ 1 };
 
@@ -110,7 +110,5 @@ namespace aimbot {
 
             float spin_variation = 0.1f;
             angle += cfg_spins_per_minute / (3 * PI) * ImGui::GetIO().DeltaTime + rand_range_f(-spin_variation, spin_variation);
-        }
-    }
-
+    return 0;
 }
