@@ -7,44 +7,46 @@
 using u32 = std::uint32_t;
 
 // Fixed rand_range_f definition
-float rand_range_f(float f_min, float f_max) {
-    float scale = rand() / static_cast<float>(RAND_MAX);
-    return f_min + scale * (f_max - f_min);
-}
+float rand_range_f(float f_min, float f_max);
 
 // Fixed smoothStep definition
-inline float smoothStep(float edge0, float edge1, float x) {
-    float t = fmaxf(0.0f, fminf(1.0f, (x - edge0) / (edge1 - edge0)));
-    return t * t * (3.0f - 2.0f * t);
-}
+inline float smoothStep(float edge0, float edge1, float x);
 
 // Fixed easeInOutQuad definition
-inline float easeInOutQuad(float t) {
-    return t < 0.5f ? 2.0f * t * t : 1.0f - pow(-2.0f * t + 2.0f, 2.0f) / 2.0f;
-}
+inline float easeInOutQuad(float t);
 
 // Fixed lerpWithEase definition
-inline float lerpWithEase(float a, float b, float t) {
-    t = smoothStep(0.0f, 1.0f, t);
-    return a + t * (b - a);
-}
+inline float lerpWithEase(float a, float b, float t);
 
 // Fixed distance template definition
 template <typename T>
-T distance(const Vector2<T>& v1, const Vector2<T>& v2) {
-    return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
-}
+T distance(const Vector2<T>& v1, const Vector2<T>& v2);
 
 // Explicit instantiation for float
 template <>
-float distance(const Vector2<float>& v1, const Vector2<float>& v2) {
-    return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
-}
+float distance(const Vector2<float>& v1, const Vector2<float>& v2);
 
 constexpr float DEAD_ZONE_THRESHOLD = 0.5f; // Adjust as needed
 
 namespace aimbot {
-    void update_aimbot(Circle& circle, const int32_t audio_time) {
+    void update_aimbot(Circle& circle, const int32_t audio_time);
+    float rand_range_f(float f_min, float f_max);
+    inline float smoothStep(float edge0, float edge1, float x);
+    inline float easeInOutQuad(float t);
+    inline float lerpWithEase(float a, float b, float t);
+
+    template <typename T>
+    T distance(const Vector2<T>& v1, const Vector2<T>& v2);
+
+    template <>
+    float distance(const Vector2<float>& v1, const Vector2<float>& v2);
+
+    inline Vector2<float> stableMousePosition();
+
+    inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t);
+
+    void update_aimbot(Circle& circle, const int32_t audio_time);
+}
         // Fixed rand_range_f definition
         float rand_range_f(float f_min, float f_max) {
             float scale = rand() / static_cast<float>(RAND_MAX);
