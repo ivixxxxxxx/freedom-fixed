@@ -63,6 +63,11 @@ Vector2<float> mouse_position()
 bool holding_slider = false;
 double slider_hold_duration = 0.0;
 
+void relax_on_beatmap_load() {
+    // Implementation of the function goes here
+    // ...
+}
+
 void update_relax(Circle &circle, const int32_t audio_time)
 {
     static double keydown_time = 0.0;
