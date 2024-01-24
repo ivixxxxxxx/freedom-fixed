@@ -1,8 +1,8 @@
 #define NOBUILD_IMPLEMENTATION
 #include "nobuild.h"
 
-#define DLL_DIRS "bettermint/", "bettermint/dll/", "bettermint/features/", "vendor/imgui/", "vendor/imgui/backends/"
-#define STANDALONE_DIRS "bettermint/", "bettermint/standalone/", "bettermint/features/", "vendor/imgui/", "vendor/imgui/backends/", "vendor/imgui/backends/standalone/"
+#define DLL_DIRS "osuassist/", "osuassist/dll/", "osuassist/features/", "vendor/imgui/", "vendor/imgui/backends/"
+#define STANDALONE_DIRS "osuassist/", "osuassist/standalone/", "osuassist/features/", "vendor/imgui/", "vendor/imgui/backends/", "vendor/imgui/backends/standalone/"
 
 #define MSVC_COMMON_FLAGS "/EHsc", "/nologo", "/DWIN32_LEAN_AND_MEAN", "/DUNICODE", "/DIMGUI_DEFINE_MATH_OPERATORS", "/DIMGUI_USE_STB_SPRINTF", "/std:c++latest"
 #define MSVC_INCLUDE_FLAGS "/Iinclude", "/Ivendor/lzma", "/Ivendor/imgui", "/Ivendor/imgui/backends", "/Ivendor/imgui/backends/standalone", "/Ivendor/GLFW/include"
@@ -101,11 +101,11 @@ static void build_standalone()
         objs, {
             if (debug_flag)
             {
-                CALL_LINK(objs, "LINK", "/OUT:bettermint_standalone.exe", "vendor/GLFW/lib-vc2022/glfw3_mt.lib", "/ENTRY:mainCRTStartup", "/SUBSYSTEM:console", MSVC_LINK_DEBUG_FLAGS);
+                CALL_LINK(objs, "LINK", "/OUT:osuassist_standalone.exe", "vendor/GLFW/lib-vc2022/glfw3_mt.lib", "/ENTRY:mainCRTStartup", "/SUBSYSTEM:console", MSVC_LINK_DEBUG_FLAGS);
             }
             else
             {
-                CALL_LINK(objs, "LINK", "/OUT:bettermint_standalone.exe", "vendor/GLFW/lib-vc2022/glfw3_mt.lib", "/ENTRY:mainCRTStartup", "/SUBSYSTEM:windows", MSVC_LINK_RELEASE_FLAGS);
+                CALL_LINK(objs, "LINK", "/OUT:osuassist_standalone.exe", "vendor/GLFW/lib-vc2022/glfw3_mt.lib", "/ENTRY:mainCRTStartup", "/SUBSYSTEM:windows", MSVC_LINK_RELEASE_FLAGS);
             }
         },
         STANDALONE_DIRS);
@@ -119,11 +119,11 @@ static inline void bake_utils_dll()
     binary_to_compressed_c("utils.dll", PATH("include", "baked_utils_dll.h"), "utils_dll", use_base85_encoding, use_compression, use_static);
 }
 
-static void build_bettermint_dll()
+static void build_osuassist_dll()
 {
-    if (!PATH_EXISTS("utils.dll") || rebuild_flag || is_path1_modified_after_path2("bettermint/utils.cs", "utils.dll"))
+    if (!PATH_EXISTS("utils.dll") || rebuild_flag || is_path1_modified_after_path2("osuassist/utils.cs", "utils.dll"))
     {
-        CMD("csc", "/unsafe", "/nologo", "/optimize", "/target:library", "/out:utils.dll", "bettermint/utils.cs");
+        CMD("csc", "/unsafe", "/nologo", "/optimize", "/target:library", "/out:utils.dll", "osuassist/utils.cs");
         bake_utils_dll();
     }
     async_obj_foreach_file_in_dirs(DLL_DIRS, NULL);
@@ -131,17 +131,17 @@ static void build_bettermint_dll()
         objs, {
             if (debug_flag)
             {
-                CALL_LINK(objs, "LINK", "/DLL", "/OUT:bettermint.dll", MSVC_LINK_DEBUG_FLAGS);
+                CALL_LINK(objs, "LINK", "/DLL", "/OUT:osuassist.dll", MSVC_LINK_DEBUG_FLAGS);
             }
             else
             {
-                CALL_LINK(objs, "LINK", "/DLL", "/OUT:bettermint.dll", MSVC_LINK_RELEASE_FLAGS);
+                CALL_LINK(objs, "LINK", "/DLL", "/OUT:osuassist.dll", MSVC_LINK_RELEASE_FLAGS);
             }
         },
         DLL_DIRS);
-    if (!PATH_EXISTS("bettermint_injector.exe") || rebuild_flag || is_path1_modified_after_path2("injector.cpp", "bettermint_injector.exe"))
+    if (!PATH_EXISTS("osuassist_injector.exe") || rebuild_flag || is_path1_modified_after_path2("injector.cpp", "osuassist_injector.exe"))
     {
-        CMD("cl", "/DWIN32_LEAN_AND_MEAN", "/DNDEBUG", "/DUNICODE", "/std:c++latest", "/MT", "/O2", "/EHsc", "/nologo", "/Fe:bettermint_injector.exe", "injector.cpp", "/link", "/MACHINE:x86");
+        CMD("cl", "/DWIN32_LEAN_AND_MEAN", "/DNDEBUG", "/DUNICODE", "/std:c++latest", "/MT", "/O2", "/EHsc", "/nologo", "/Fe:osuassist_injector.exe", "injector.cpp", "/link", "/MACHINE:x86");
     }
 }
 
@@ -149,19 +149,19 @@ static void build()
 {
     if (all_flag)
     {
-        build_bettermint_dll();
+        build_osuassist_dll();
         build_standalone();
         return;
     }
     if (standalone_flag)
         build_standalone();
     else
-        build_bettermint_dll();
+        build_osuassist_dll();
 }
 
 static void run()
 {
-    CMD(".\\bettermint_standalone.exe");
+    CMD(".\\osuassist_standalone.exe");
 }
 
 static void process_args(int argc, char **argv)
