@@ -19,34 +19,35 @@ T distance(const Vector2<T>& v1, const Vector2<T>& v2);
 constexpr float DEAD_ZONE_THRESHOLD = 0.5f; // Adjust as needed
 
 namespace aimbot {
-    void update_aimbot(Circle& circle, int value) {
-        constexpr static u32 MODULE_ID{ 1 };
-        uint8_t active{};
-        u32 last_top_note{};
 
-        float rand_range_f(float f_min, float f_max) {
-            float scale = rand() / (float)RAND_MAX;
-            return f_min + scale * (f_max - f_min);
-        }
+    // Fixed rand_range_f definition
+    float rand_range_f(float f_min, float f_max) {
+        float scale = rand() / static_cast<float>(RAND_MAX);
+        return f_min + scale * (f_max - f_min);
+    }
 
-        inline float smoothStep(float edge0, float edge1, float x) {
-            float t = fmaxf(0.0, fminf(1.0, (x - edge0) / (edge1 - edge0)));
-            return t * t * (3.0 - 2.0 * t);
-        }
+    // Fixed smoothStep definition
+    inline float smoothStep(float edge0, float edge1, float x) {
+        float t = fmaxf(0.0f, fminf(1.0f, (x - edge0) / (edge1 - edge0)));
+        return t * t * (3.0f - 2.0f * t);
+    }
 
-        inline float easeInOutQuad(float t) {
-            return t < 0.5 ? 2.0 * t * t : 1.0 - pow(-2.0 * t + 2.0, 2.0) / 2.0;
-        }
+    // Fixed easeInOutQuad definition
+    inline float easeInOutQuad(float t) {
+        return t < 0.5f ? 2.0f * t * t : 1.0f - pow(-2.0f * t + 2.0f, 2.0f) / 2.0f;
+    }
 
-        inline float lerpWithEase(float a, float b, float t) {
-            t = smoothStep(0.0f, 1.0f, t);
-            return a + t * (b - a);
-        }
+    // Fixed lerpWithEase definition
+    inline float lerpWithEase(float a, float b, float t) {
+        t = smoothStep(0.0f, 1.0f, t);
+        return a + t * (b - a);
+    }
 
-        template <typename T>
-        inline T distance(const Vector2<T>& v1, const Vector2<T>& v2) {
-            return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
-        }
+    // Fixed distance template definition
+    template <typename T>
+    inline T distance(const Vector2<T>& v1, const Vector2<T>& v2) {
+        return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
+    }
 
         inline Vector2<float> stableMousePosition() {
             Vector2<float> currentMousePos(.0f, .0f);
@@ -127,4 +128,3 @@ namespace aimbot {
         }
     }
 }
-// implementation
