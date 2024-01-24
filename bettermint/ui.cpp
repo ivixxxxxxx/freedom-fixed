@@ -468,12 +468,11 @@ void update_ui()
             ImGui::Text("We love the taste of Mints");
             ImGui::Text("@mrflashstudio");
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
-            ImGui::PushItemWidth(ImGui::CalcTextSize("BetterMint").x + 10.f);
-            ImGui::InputText(" - Discord", (char *)"bettermint", 8, ImGuiInputTextFlags_ReadOnly);
+            ImGui::PushItemWidth(ImGui::CalcTextSize("OsuAssist").x + 10.f);
+            ImGui::InputText(" - Discord", (char *)"ivixxx.", 8, ImGuiInputTextFlags_ReadOnly);
             ImGui::PopItemWidth();
             ImGui::Dummy(ImVec2(0.0f, 2.5f));
-            ImGui::PushItemWidth(ImGui::CalcTextSize("https://discord.gg/basic").x + 10.f);
-            ImGui::InputText(" - Discord Server ", (char *)"https://discord.gg/basic", 29, ImGuiInputTextFlags_ReadOnly);
+            ImGui::PushItemWidth(ImGui::CalcTextSize("._").x + 10.f);
             ImGui::PopItemWidth();
         }
         if (selected_tab == MenuTab::Debug)
