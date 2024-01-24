@@ -64,6 +64,7 @@ void update_relax(Circle &circle, const int32_t audio_time)
 {
     static double keydown_time = 0.0;
     static double keyup_delay = 0.0;
+    static bool holding_slider = false;
 
     if (cfg_relax_lock)
     {
@@ -95,9 +96,9 @@ void update_relax(Circle &circle, const int32_t audio_time)
 
                 current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
 
-                send_keyboard_input(current_click, 0);
-                FR_INFO_FMT("Relax hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
-                keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
+                // Introduce randomness in keydown_time and keyup_delay
+                keyup_delay = rand_range_f(0.1, 0.5);
+                keydown_time = ImGui::GetTime() + rand_range_f(0.05, 0.2);
 
                 if (cfg_timewarp_enabled)
                 {
@@ -111,12 +112,41 @@ void update_relax(Circle &circle, const int32_t audio_time)
                     else if (current_beatmap.mods & Mods::HalfTime)
                         keyup_delay /= 0.75;
                 }
-                keydown_time = ImGui::GetTime();
+
                 circle.clicked = true;
                 od_check_ms = .0f;
+
+                // Handle holding on sliders and spinners
+                if (circle.type == HitObjectType::Slider || circle.type == HitObjectType::Spinner)
+                {
+                    holding_slider = true;
+                    send_keyboard_input(current_click, 0);
+                    FR_INFO_FMT("Relax hit %d (Holding)!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
+                }
+                else
+                {
+                    send_keyboard_input(current_click, 0);
+                    FR_INFO_FMT("Relax hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
+                }
             }
         }
     }
+
+    if (cfg_relax_lock && keydown_time && ((ImGui::GetTime() - keydown_time) * 1000.0 > keyup_delay))
+    {
+        keydown_time = 0.0;
+
+        // Release key after keyup_delay
+        send_keyboard_input(current_click, KEYEVENTF_KEYUP);
+
+        // Release slider hold
+        if (holding_slider)
+        {
+            holding_slider = false;
+            FR_INFO_FMT("Relax release slider hold %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
+        }
+    }
+}
     if (cfg_relax_lock && keydown_time && ((ImGui::GetTime() - keydown_time) * 1000.0 > keyup_delay))
     {
         keydown_time = 0.0;
