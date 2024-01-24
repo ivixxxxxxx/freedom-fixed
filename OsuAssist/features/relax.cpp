@@ -60,14 +60,6 @@ Vector2<float> mouse_position()
     return mouse_pos;
 }
 
-bool holding_slider = false;
-double slider_hold_duration = 0.0;
-
-void relax_on_beatmap_load() {
-    // Implementation of the function goes here
-    // ...
-}
-
 void update_relax(Circle &circle, const int32_t audio_time)
 {
     static double keydown_time = 0.0;
@@ -103,9 +95,9 @@ void update_relax(Circle &circle, const int32_t audio_time)
 
                 current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
 
-                // Introduce randomness in keydown_time and keyup_delay
-                keyup_delay = rand_range_f(0.15, 0.6);
-                keydown_time = ImGui::GetTime() + rand_range_f(0.07, 0.25);
+                send_keyboard_input(current_click, 0);
+                FR_INFO_FMT("Relax hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
+                keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
 
                 if (cfg_timewarp_enabled)
                 {
@@ -119,41 +111,20 @@ void update_relax(Circle &circle, const int32_t audio_time)
                     else if (current_beatmap.mods & Mods::HalfTime)
                         keyup_delay /= 0.75;
                 }
-
+                keydown_time = ImGui::GetTime();
                 circle.clicked = true;
                 od_check_ms = .0f;
-
-                // Handle holding on sliders and spinners
-                if (circle.type == HitObjectType::Slider || circle.type == HitObjectType::Spinner)
-                {
-                    holding_slider = true;
-                    send_keyboard_input(current_click, 0);
-                    FR_INFO_FMT("Relax hit %d (Holding)!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
-
-                    // Calculate slider hold duration based on slider's effective duration
-                    slider_hold_duration = (circle.end_time - circle.start_time) * rand_range_f(0.6, 1.4);
-                }
-                else
-                {
-                    send_keyboard_input(current_click, 0);
-                    FR_INFO_FMT("Relax hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
-                }
             }
         }
     }
-
     if (cfg_relax_lock && keydown_time && ((ImGui::GetTime() - keydown_time) * 1000.0 > keyup_delay))
     {
         keydown_time = 0.0;
-
-        // Release key after keyup_delay
         send_keyboard_input(current_click, KEYEVENTF_KEYUP);
-
-        // Release slider hold after dynamically calculated duration
-        if (holding_slider && slider_hold_duration > 0.0)
-        {
-            holding_slider = false;
-            FR_INFO_FMT("Relax release slider hold %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
-        }
     }
+}
+
+void relax_on_beatmap_load()
+{
+    current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
 }
