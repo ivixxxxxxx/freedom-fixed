@@ -115,7 +115,7 @@ if (aimbot::distance<float>(currentMousePos, lastMousePos) < DEAD_ZONE_THRESHOLD
 inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t) {
     Vector2 target_on_screen = playfield_to_screen(target);
 
-    float movement_speed = 50.0f; // Adjust as needed
+    float movement_speed = 200.0f; // Adjust as needed
 
     // Calculate the direction vector
     Vector2 direction = normalize(target_on_screen - cursor_pos);
