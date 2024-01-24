@@ -9,12 +9,40 @@
 
 using u32 = std::uint32_t;
 
-float rand_range_f(float f_min, float f_max);
-float smoothStep(float edge0, float edge1, float x);
-float easeInOutQuad(float t);
-float lerpWithEase(float a, float b, float t);
+// Fixed rand_range_f declaration and definition
+float rand_range_f(float f_min, float f_max) {
+    float scale = rand() / static_cast<float>(RAND_MAX);
+    return f_min + scale * (f_max - f_min);
+}
+
+// Fixed smoothStep declaration and definition
+inline float smoothStep(float edge0, float edge1, float x) {
+    float t = fmaxf(0.0f, fminf(1.0f, (x - edge0) / (edge1 - edge0)));
+    return t * t * (3.0f - 2.0f * t);
+}
+
+// Fixed easeInOutQuad declaration and definition
+inline float easeInOutQuad(float t) {
+    return t < 0.5f ? 2.0f * t * t : 1.0f - pow(-2.0f * t + 2.0f, 2.0f) / 2.0f;
+}
+
+// Fixed lerpWithEase declaration and definition
+inline float lerpWithEase(float a, float b, float t) {
+    t = smoothStep(0.0f, 1.0f, t);
+    return a + t * (b - a);
+}
+
+// Fixed distance template declaration and definition
 template <typename T>
-T distance(const Vector2<T>& v1, const Vector2<T>& v2);
+T distance(const Vector2<T>& v1, const Vector2<T>& v2) {
+    return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
+}
+
+// Explicit instantiation for float
+template <>
+float distance(const Vector2<float>& v1, const Vector2<float>& v2) {
+    return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
+}
 
 constexpr float DEAD_ZONE_THRESHOLD = 0.5f; // Adjust as needed
 
