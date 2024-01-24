@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Vector.h"
 #include "hitobject.h"
 #include "features/aimbot.h"
