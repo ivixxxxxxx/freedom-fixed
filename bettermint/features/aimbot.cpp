@@ -13,7 +13,8 @@ float rand_range_f(float f_min, float f_max);
 float smoothStep(float edge0, float edge1, float x);
 float easeInOutQuad(float t);
 float lerpWithEase(float a, float b, float t);
-template <typename T> T distance(const Vector2<T>& v1, const Vector2<T>& v2);
+template <typename T>
+T distance(const Vector2<T>& v1, const Vector2<T>& v2);
 
 constexpr float DEAD_ZONE_THRESHOLD = 0.5f; // Adjust as needed
 
@@ -23,31 +24,31 @@ namespace aimbot {
         uint8_t active{};
         u32 last_top_note{};
 
-        float rand_range_f(float f_min, float f_max) {
+        static float rand_range_f(float f_min, float f_max) {
             float scale = rand() / (float)RAND_MAX;
             return f_min + scale * (f_max - f_min);
         }
 
-        inline float smoothStep(float edge0, float edge1, float x) {
+        static inline float smoothStep(float edge0, float edge1, float x) {
             float t = fmaxf(0.0, fminf(1.0, (x - edge0) / (edge1 - edge0)));
             return t * t * (3.0 - 2.0 * t);
         }
 
-        inline float easeInOutQuad(float t) {
+        static inline float easeInOutQuad(float t) {
             return t < 0.5 ? 2.0 * t * t : 1.0 - pow(-2.0 * t + 2.0, 2.0) / 2.0;
         }
 
-        inline float lerpWithEase(float a, float b, float t) {
+        static inline float lerpWithEase(float a, float b, float t) {
             t = smoothStep(0.0f, 1.0f, t);
             return a + t * (b - a);
         }
 
         template <typename T>
-        inline T distance(const Vector2<T>& v1, const Vector2<T>& v2) {
+        static inline T distance(const Vector2<T>& v1, const Vector2<T>& v2) {
             return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
         }
 
-        inline Vector2<float> stableMousePosition() {
+        static inline Vector2<float> stableMousePosition() {
             Vector2<float> currentMousePos(.0f, .0f);
             uintptr_t osu_manager = *(uintptr_t*)(osu_manager_ptr);
             if (!osu_manager) return currentMousePos;
@@ -66,7 +67,7 @@ namespace aimbot {
             return currentMousePos;
         }
 
-        inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t) {
+        static inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t) {
             Vector2 target_on_screen = playfield_to_screen(target);
 
             float movement_variation = 1.5f; // Adjust as needed
