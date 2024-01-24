@@ -1,4 +1,3 @@
-#define PI 3.14159f
 #include "Vector.h"
 #include "hitobject.h"
 #include <cmath>
@@ -22,6 +21,8 @@ inline float lerpWithEase(float a, float b, float t);
 // Fixed distance template definition
 template <typename T>
 T distance(const Vector2<T>& v1, const Vector2<T>& v2);
+
+constexpr float MY_PI = M_PI;
 
 constexpr float DEAD_ZONE_THRESHOLD = 0.5f; // Adjust as needed
 
@@ -110,7 +111,7 @@ inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<flo
     // Add dancing effect to cursor movement
     float dance_amplitude = 10.0f; // Adjust as needed
     float dance_frequency = 2.0f;  // Adjust as needed
-    float dance_offset = dance_amplitude * sinf(2.0f * PI * dance_frequency * t);
+    float dance_offset = dance_amplitude * sinf(2.0f * MY_PI * dance_frequency * t);
 
     Vector2 predicted_position(lerpWithEase(cursor_pos.x, target_on_screen.x + dance_offset, t),
         lerpWithEase(cursor_pos.y, target_on_screen.y + dance_offset, t));
