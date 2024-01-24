@@ -1,18 +1,18 @@
-name: build-bettermint
+name: build-osuassist
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'bettermint/**'
+      - 'osuassist/**'
       - 'imgui/**'
       - 'include/**'
   workflow_dispatch:
     branches:
       - main
     paths:
-      - 'bettermint/**'
+      - 'osuassist/**'
       - 'imgui/**'
       - 'include/**'
 
@@ -37,8 +37,8 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: bettermint
+          name: osuassist
           path: |
-            bettermint_injector.exe
-            bettermint.dll
+            osuassist_injector.exe
+            osuassist.dll
             config.ini
