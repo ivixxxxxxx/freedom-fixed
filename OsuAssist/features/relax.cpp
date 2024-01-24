@@ -60,6 +60,12 @@ Vector2<float> mouse_position()
     return mouse_pos;
 }
 
+void relax_on_beatmap_load()
+{
+    // Add any necessary code for the function here
+    // For example, you can leave it empty for now
+}
+
 void update_relax(Circle &circle, const int32_t audio_time)
 {
     static double keydown_time = 0.0;
@@ -147,4 +153,3 @@ void update_relax(Circle &circle, const int32_t audio_time)
         }
     }
 }
-
