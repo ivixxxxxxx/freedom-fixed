@@ -45,7 +45,7 @@ namespace aimbot {
 
     // Fixed distance template definition
 template <typename T>
-inline T aimbot::distance(const Vector2<T>& v1, const Vector2<T>& v2) {
+T aimbot::distance(const Vector2<T>& v1, const Vector2<T>& v2) {
     return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
 }
     inline Vector2<float> stableMousePosition() {
