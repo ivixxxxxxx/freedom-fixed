@@ -66,6 +66,8 @@ void relax_on_beatmap_load()
     // For example, you can leave it empty for now
 }
 
+// ... (previous code)
+
 void update_relax(Circle &circle, const int32_t audio_time)
 {
     static double keydown_time = 0.0;
@@ -103,8 +105,8 @@ void update_relax(Circle &circle, const int32_t audio_time)
                 current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
 
                 // Introduce randomness in keydown_time and keyup_delay
-                keyup_delay = rand_range_f(0.1, 0.5);
-                keydown_time = ImGui::GetTime() + rand_range_f(0.05, 0.2);
+                keyup_delay = rand_range_f(0.2, 0.7);
+                keydown_time = ImGui::GetTime() + rand_range_f(0.1, 0.3);
 
                 if (cfg_timewarp_enabled)
                 {
@@ -145,7 +147,7 @@ void update_relax(Circle &circle, const int32_t audio_time)
         // Release key after keyup_delay
         send_keyboard_input(current_click, KEYEVENTF_KEYUP);
 
-        // Release slider hold
+        // Release slider hold after a longer duration
         if (holding_slider)
         {
             holding_slider = false;
