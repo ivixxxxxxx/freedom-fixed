@@ -41,11 +41,18 @@ namespace aimbot {
 
     inline Vector2<float> stableMousePosition();
 
-inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t) {
+inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t, float stableMovement) {
     Vector2<float> smoothed_position(
         lerpWithEase(cursor_pos.x, target.x, t),
         lerpWithEase(cursor_pos.y, target.y, t)
     );
+
+    // Apply stable movement
+    smoothed_position.x += rand_range_f(-stableMovement, stableMovement);
+    smoothed_position.y += rand_range_f(-stableMovement, stableMovement);
+
+    move_mouse_to(smoothed_position.x, smoothed_position.y);
+}
 
     move_mouse_to(smoothed_position.x, smoothed_position.y);
 }
@@ -140,12 +147,19 @@ if (aimbot::distance<float>(currentMousePos, lastMousePos) < DEAD_ZONE_THRESHOLD
             float slider_ball_y = *(float*)(animation_ptr + OSU_ANIMATION_SLIDER_BALL_Y_OFFSET);
             Vector2 slider_ball(slider_ball_x, slider_ball_y);
 
-            float slider_variation = 5.0f;
-            slider_ball.x += rand_range_f(-slider_variation, slider_variation);
-            slider_ball.y += rand_range_f(-slider_variation, slider_variation);
+constexpr float stableMovement = 1.0f; // Adjust as needed
+target_on_screen.x = lerpWithEase(cursor_pos.x, target_on_screen.x, t);
+target_on_screen.y = lerpWithEase(cursor_pos.y, target_on_screen.y, t);
 
-            move_mouse_to_target(slider_ball, cursor_pos, t);
-        }
+target_on_screen.x += rand_range_f(-stableMovement, stableMovement);
+target_on_screen.y += rand_range_f(-stableMovement, stableMovement);
+
+Vector2 predicted_position(lerpWithEase(cursor_pos.x, target_on_screen.x, t),
+    lerpWithEase(cursor_pos.y, target_on_screen.y, t));
+
+move_mouse_to(predicted_position.x, predicted_position.y);
+}
+
         else if (circle.type == HitObjectType::Spinner && audio_time >= circle.start_time) {
             auto& center = circle.position;
             constexpr float radius = 60.0f;
