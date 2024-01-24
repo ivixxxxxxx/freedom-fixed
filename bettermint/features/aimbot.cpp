@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <cstdint> // for uintptr_t
 #include "Vector.h" // assuming there is a Vector2 class
+#include "hitobject.h"
 
 using u32 = std::uint32_t;
 
