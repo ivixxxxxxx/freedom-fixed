@@ -9,6 +9,15 @@
 
 using u32 = std::uint32_t;
 
+
+float rand_range_f(float f_min, float f_max);
+float smoothStep(float edge0, float edge1, float x);
+float easeInOutQuad(float t);
+float lerpWithEase(float a, float b, float t);
+template <typename T>
+T distance(const Vector2<T>& v1, const Vector2<T>& v2);
+
+
 constexpr float DEAD_ZONE_THRESHOLD = 0.5f; // Adjust as needed
 
 namespace aimbot {
