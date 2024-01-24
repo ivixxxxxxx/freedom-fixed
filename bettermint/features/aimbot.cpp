@@ -3,26 +3,19 @@
 #include "features/aimbot.h"
 #include <cmath>
 #include <cstdlib>
-#include <cstdint>
-#include "Vector.h"
+#include <cstdint> // for uintptr_t
+#include "Vector.h" // assuming there is a Vector2 class
 #include "hitobject.h"
-#include "imgui.h"  // Include ImGui header
+
+using u32 = std::uint32_t;
+
+constexpr float DEAD_ZONE_THRESHOLD = 0.5f; // Adjust as needed
 
 namespace aimbot {
-    class Circle;  // Declare Circle in the correct namespace or use the global namespace
-
-    // Define missing constants here
-    extern uintptr_t osu_manager_ptr;
-    constexpr int OSU_RULESET_MOUSE_X_OFFSET = 0;
-    constexpr int OSU_RULESET_MOUSE_Y_OFFSET = 0;
-
-    // Declare missing functions here
-    Vector2<float> playfield_to_screen(const Vector2<float>& position);
-    void move_mouse_to(float x, float y);
-
-    using u32 = std::uint32_t;
-
-    constexpr float DEAD_ZONE_THRESHOLD = 0.5f;
+    void update_aimbot(Circle& circle, int value) {
+    constexpr static u32 MODULE_ID{ 1 };
+    uint8_t active{};
+    u32 last_top_note{};
 
     static float rand_range_f(float f_min, float f_max) {
         float scale = rand() / (float)RAND_MAX;
@@ -70,7 +63,7 @@ namespace aimbot {
     static inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<float>& cursor_pos, float t) {
         Vector2 target_on_screen = playfield_to_screen(target);
 
-        float movement_variation = 1.5f;
+        float movement_variation = 1.5f; // Adjust as needed
         target_on_screen.x += rand_range_f(-movement_variation, movement_variation);
         target_on_screen.y += rand_range_f(-movement_variation, movement_variation);
 
@@ -125,5 +118,4 @@ namespace aimbot {
             angle += cfg_spins_per_minute / (3 * PI) * ImGui::GetIO().DeltaTime + rand_range_f(-spin_variation, spin_variation);
         }
     }
-
-}  // namespace aimbot
+}
