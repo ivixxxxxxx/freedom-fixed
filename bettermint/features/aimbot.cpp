@@ -1,11 +1,11 @@
 #pragma once
 
+#include "Vector.h"
+#include "hitobject.h"
 #include "features/aimbot.h"
 #include <cmath>
 #include <cstdlib>
-#include <cstdint> // for uintptr_t
-#include "Vector.h" // assuming there is a Vector2 class
-#include "hitobject.h"
+#include <cstdint>
 
 using u32 = std::uint32_t;
 
