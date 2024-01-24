@@ -7,28 +7,28 @@
 
 using u32 = std::uint32_t;
 
-// Fixed rand_range_f definition
-float rand_range_f(float f_min, float f_max) {
-    float scale = rand() / static_cast<float>(RAND_MAX);
-    return f_min + scale * (f_max - f_min);
-}
+    // Fixed rand_range_f definition
+    float rand_range_f(float f_min, float f_max) {
+        float scale = rand() / static_cast<float>(RAND_MAX);
+        return f_min + scale * (f_max - f_min);
+    }
 
-// Fixed smoothStep definition
-inline float smoothStep(float edge0, float edge1, float x) {
-    float t = fmaxf(0.0f, fminf(1.0f, (x - edge0) / (edge1 - edge0)));
-    return t * t * (3.0f - 2.0f * t);
-}
+    // Fixed smoothStep definition
+    inline float smoothStep(float edge0, float edge1, float x) {
+        float t = fmaxf(0.0f, fminf(1.0f, (x - edge0) / (edge1 - edge0)));
+        return t * t * (3.0f - 2.0f * t);
+    }
 
-// Fixed easeInOutQuad definition
-inline float easeInOutQuad(float t) {
-    return t < 0.5f ? 2.0f * t * t : 1.0f - pow(-2.0f * t + 2.0f, 2.0f) / 2.0f;
-}
+    // Fixed easeInOutQuad definition
+    inline float easeInOutQuad(float t) {
+        return t < 0.5f ? 2.0f * t * t : 1.0f - pow(-2.0f * t + 2.0f, 2.0f) / 2.0f;
+    }
 
-// Fixed lerpWithEase definition
-inline float lerpWithEase(float a, float b, float t) {
-    t = smoothStep(0.0f, 1.0f, t);
-    return a + t * (b - a);
-}
+    // Fixed lerpWithEase definition
+    inline float lerpWithEase(float a, float b, float t) {
+        t = smoothStep(0.0f, 1.0f, t);
+        return a + t * (b - a);
+    }
 
 // Fixed distance template definition
 template <typename T>
@@ -157,5 +157,4 @@ if (aimbot::distance<float>(currentMousePos, lastMousePos) < DEAD_ZONE_THRESHOLD
             float spin_variation = 0.1f;
             angle += cfg_spins_per_minute / (3 * PI) * ImGui::GetIO().DeltaTime + rand_range_f(-spin_variation, spin_variation);
         }
-    }
-}
+    };
