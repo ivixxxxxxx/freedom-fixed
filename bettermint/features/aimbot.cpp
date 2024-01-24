@@ -55,8 +55,6 @@ inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<flo
     move_mouse_to(smoothed_position.x, smoothed_position.y);
 }
 
-    move_mouse_to(smoothed_position.x, smoothed_position.y);
-}
     void update_aimbot(Circle& circle, const int32_t audio_time);
 }
         // Fixed rand_range_f definition
