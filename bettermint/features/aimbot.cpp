@@ -51,7 +51,7 @@ T aimbot::distance(const Vector2<T>& v1, const Vector2<T>& v2) {
 
 // Add explicit instantiation for float
 template <>
-float aimbot::distance<float>(const Vector2<float>& v1, const Vector2<float>& v2) {
+float aimbot::distance(const Vector2<float>& v1, const Vector2<float>& v2) {
     return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
 }
 
