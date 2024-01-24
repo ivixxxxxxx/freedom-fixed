@@ -10,8 +10,8 @@ OsuAssist - internal osu! mod, realtime difficulty changer for any beatmap, work
 
 ## Usage
 
-run osu, then run your favorite injector.
-mod ui should appear in top left corner of the osu! window, see [controls](#controls).  
+run osu, then run your favorite injector. Play a beatmap first before injecting to prevent any memory scanning issues.
+mod ui should appear in top left corner of the osu! window, see [controls](#controls).
 
 ### Controls
 
