@@ -8,8 +8,8 @@ float od_check_ms = .0f;
 
 float jumping_window_offset = .0f;
 
-int wait_hitobjects_min = -35;
-int wait_hitobjects_max = 35;
+int wait_hitobjects_min = 3;
+int wait_hitobjects_max = 45;
 
 bool debug_relax = false;
 
