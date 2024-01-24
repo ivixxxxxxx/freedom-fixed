@@ -86,15 +86,16 @@ inline void move_mouse_to_target(const Vector2<float>& target, const Vector2<flo
 
 // Updated distance template definition
 template <typename T>
-T calculate_distance(const Vector2<T>& v1, const Vector2<T>& v2) {
+T distance(const Vector2<T>& v1, const Vector2<T>& v2) {
     return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
 }
 
 // Explicit instantiation for float
 template <>
-float calculate_distance(const Vector2<float>& v1, const Vector2<float>& v2) {
+float distance(const Vector2<float>& v1, const Vector2<float>& v2) {
     return std::sqrt(std::pow(v1.x - v2.x, 2) + std::pow(v1.y - v2.y, 2));
 }
+
 
 
 
