@@ -1,8 +1,7 @@
 #include "ui.h"
 
 ImFont *font = 0;
-char song_name_u8[256] = "OsuAssist" FR_VERSION " is Loading!";
-bool show_debug_log_window = false;
+char song_name_u8[256] = "OsuAssist " FR_VERSION " is Loading!";
 
 HHOOK oWndProc;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -156,14 +155,14 @@ void update_ui()
     ImGui::PushFont(font);
 
     ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
-    ImGui::Begin("BetterMint", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("Freedom", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
 
     ImGui::Text("%s", song_name_u8);
 
     if (memory_scan_progress < .99f)
     {
         static char overlay_buf[32] = {0};
-        ImFormatString(overlay_buf, IM_ARRAYSIZE(overlay_buf), prepared_methods ? "Memory Scan: %.0f%%" : "Preparing Methods: %.0f%%", memory_scan_progress * 100 + 0.01f);
+        ImFormatString(overlay_buf, IM_ARRAYSIZE(overlay_buf), "Memory Scan: %.0f%%", memory_scan_progress * 100 + 0.01f);
         ImGui::ProgressBar(memory_scan_progress, ImVec2(.0f, .0f), overlay_buf);
     }
 
@@ -183,9 +182,9 @@ void update_ui()
 
         const auto inactive_tab = [](const char *tab_name)
         {
-            ImGui::PushStyleColor(ImGuiCol_Text, ITEM_UNAVAILABLE);
+            ImGui::BeginDisabled();
             ImGui::Selectable(tab_name, false, ImGuiSelectableFlags_DontClosePopups);
-            ImGui::PopStyleColor();
+            ImGui::EndDisabled();
         };
 
         update_tab("Difficulty", MenuTab::Difficulty);
@@ -254,11 +253,11 @@ void update_ui()
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
-            ImGui::SliderFloat("##fraction_modifier", &cfg_fraction_modifier, 1.f, 1000.f, "Cursor Speed: %.0f");
+            ImGui::SliderFloat("##fraction_modifier", &cfg_fraction_modifier, 50.f, 500.f, "Cursor Speed: %.0f");
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             ImGui::Dummy(ImVec2(.0f, .5f));
-            ImGui::SliderInt("##spins_per_minute", &cfg_spins_per_minute, 0, 1000, "Spins Per Minute: %d");
+            ImGui::SliderInt("##spins_per_minute", &cfg_spins_per_minute, 0, 600, "Spins Per Minute: %d");
             if (ImGui::IsItemDeactivatedAfterEdit())
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFrameHeightWithSpacing());
@@ -314,18 +313,31 @@ void update_ui()
         }
         if (selected_tab == MenuTab::Mods)
         {
+            uintptr_t unmod_flashlight_found = update_flashlight_code_start;
+            if (!unmod_flashlight_found)
+                ImGui::BeginDisabled();
             if (ImGui::Checkbox("Unmod Flashlight", &cfg_flashlight_enabled))
             {
                 cfg_flashlight_enabled ? enable_flashlight_hooks() : disable_flashlight_hooks();
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
+            if (!unmod_flashlight_found)
+                ImGui::EndDisabled();
             ImGui::Dummy(ImVec2(.0f, 5.f));
+            uintptr_t unmod_hidden_found = hom_update_vars_hidden_loc;
+            if (!unmod_hidden_found)
+                ImGui::BeginDisabled();
             if (ImGui::Checkbox("Unmod Hidden", &cfg_hidden_remover_enabled))
             {
                 cfg_hidden_remover_enabled ? enable_hidden_remover_hooks() : disable_hidden_remover_hooks();
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
             }
+            if (!unmod_hidden_found)
+                ImGui::EndDisabled();
             ImGui::Dummy(ImVec2(.0f, 5.f));
+            uintptr_t score_multiplier_found = score_multiplier_code_start;
+            if (!score_multiplier_found)
+                ImGui::BeginDisabled();
             ImGui::Text("Score Multiplier");
             ImGui::Dummy(ImVec2(.0f, 5.f));
             ImGui::PushID(70);
@@ -350,6 +362,8 @@ void update_ui()
                 ImGui::PopStyleColor();
                 ImGui::PopItemFlag();
             }
+            if (!score_multiplier_found)
+                ImGui::EndDisabled();
         }
         if (selected_tab == MenuTab::Misc)
         {
@@ -375,11 +389,11 @@ void update_ui()
             {
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
                 static wchar_t discord_rich_presence_state_wchar[512] = {0};
-                invoke_csharp_method(L"bettermint.Utils", L"FreeCSharpString", discord_rich_presence_state_wchar);
+                invoke_csharp_method(L"Freedom.Utils", L"FreeCSharpString", discord_rich_presence_state_wchar);
                 int wchars_count = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_state, -1, NULL, 0);
                 int bytes_written = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_state, -1, discord_rich_presence_state_wchar, wchars_count);
                 discord_rich_presence_state_wchar[bytes_written] = '\0';
-                VARIANT v = invoke_csharp_method(L"bettermint.Utils", L"GetCSharpStringPtr", discord_rich_presence_state_wchar);
+                VARIANT v = invoke_csharp_method(L"Freedom.Utils", L"GetCSharpStringPtr", discord_rich_presence_state_wchar);
                 if (variant_ok(&v))
                     discord_rich_presence_state_string_ptr = v.intVal;
             }
@@ -389,11 +403,11 @@ void update_ui()
             {
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
                 static wchar_t discord_rich_presence_large_text_wchar[512] = {0};
-                invoke_csharp_method(L"bettermint.Utils", L"FreeCSharpString", discord_rich_presence_large_text_wchar);
+                invoke_csharp_method(L"Freedom.Utils", L"FreeCSharpString", discord_rich_presence_large_text_wchar);
                 int wchars_count = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_large_text, -1, NULL, 0);
                 int bytes_written = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_large_text, -1, discord_rich_presence_large_text_wchar, wchars_count);
                 discord_rich_presence_large_text_wchar[bytes_written] = '\0';
-                VARIANT v = invoke_csharp_method(L"bettermint.Utils", L"GetCSharpStringPtr", discord_rich_presence_large_text_wchar);
+                VARIANT v = invoke_csharp_method(L"Freedom.Utils", L"GetCSharpStringPtr", discord_rich_presence_large_text_wchar);
                 if (variant_ok(&v))
                     discord_rich_presence_large_text_string_ptr = v.intVal;
             }
@@ -403,11 +417,11 @@ void update_ui()
             {
                 ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
                 static wchar_t discord_rich_presence_small_text_wchar[512] = {0};
-                invoke_csharp_method(L"bettermint.Utils", L"FreeCSharpString", discord_rich_presence_small_text_wchar);
+                invoke_csharp_method(L"Freedom.Utils", L"FreeCSharpString", discord_rich_presence_small_text_wchar);
                 int wchars_count = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_small_text, -1, NULL, 0);
                 int bytes_written = MultiByteToWideChar(CP_UTF8, 0, discord_rich_presence_small_text, -1, discord_rich_presence_small_text_wchar, wchars_count);
                 discord_rich_presence_small_text_wchar[bytes_written] = '\0';
-                VARIANT v = invoke_csharp_method(L"bettermint.Utils", L"GetCSharpStringPtr", discord_rich_presence_small_text_wchar);
+                VARIANT v = invoke_csharp_method(L"Freedom.Utils", L"GetCSharpStringPtr", discord_rich_presence_small_text_wchar);
                 if (variant_ok(&v))
                     discord_rich_presence_small_text_string_ptr = v.intVal;
             }
@@ -442,14 +456,12 @@ void update_ui()
                 ImGui::EndCombo();
             }
 
-            ImGui::Dummy(ImVec2(.0f, 5.f));
+            ImGui::Dummy(ImVec2(.0f, 10.f));
 
             static bool nt_user_send_input_patched = true;
             if (ImGui::Checkbox("Disable NtUserSendInput Check", &nt_user_send_input_patched))
                 nt_user_send_input_patched ? enable_nt_user_send_input_patch() : disable_nt_user_send_input_patch();
             ImGui::Dummy(ImVec2(.0f, 5.f));
-            if (ImGui::Button("Unload DLL"))
-                unload_dll();
             bool all_found = all_code_starts_found();
             if (all_found)
                 ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -460,28 +472,33 @@ void update_ui()
             }
             if (all_found)
                 ImGui::PopItemFlag();
+            ImGui::SameLine(.0f, 20.f);
+            if (ImGui::Button("Unload DLL"))
+                unload_dll();
+            ImGui::Dummy(ImVec2(.0f, 5.f));
         }
         if (selected_tab == MenuTab::About)
         {
             ImGui::Text("OsuAssist " FR_VERSION);
             ImGui::Dummy(ImVec2(0.0f, 5.0f));
-            ImGui::Text("We love iVix for updating this cheat 24/7");
-            ImGui::Text("@mrflashstudio");
-            ImGui::Dummy(ImVec2(0.0f, 5.0f));
-            ImGui::PushItemWidth(ImGui::CalcTextSize("OsuAssist").x + 10.f);
             ImGui::InputText(" - Discord", (char *)"ivixxx.", 8, ImGuiInputTextFlags_ReadOnly);
             ImGui::PopItemWidth();
             ImGui::Dummy(ImVec2(0.0f, 2.5f));
-            ImGui::PushItemWidth(ImGui::CalcTextSize("._").x + 10.f);
             ImGui::PopItemWidth();
         }
         if (selected_tab == MenuTab::Debug)
         {
-            ImGui::Checkbox("Show Debug Log", &show_debug_log_window);
+            if (ImGui::Button("Debug Log"))
+            {
+                cfg_show_debug_log = true;
+                cfg_write_debug_log = true;
+                ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+            }
+            ImGui::Dummy(ImVec2(.0f, 2.f));
             if (ImGui::CollapsingHeader("Game", ImGuiTreeNodeFlags_None))
             {
                 ImGui::Text("Audio Time: %d", audio_time_ptr ? *(int32_t *)audio_time_ptr : 0);
-                const auto scene_ptr_to_str = [](Scene *s){
+                static const auto scene_ptr_to_str = [](Scene *s){
                     if (!s) return "Unknown";
                     Scene scene = *s;
                     switch (scene)
@@ -500,7 +517,7 @@ void update_ui()
                 };
                 ImGui::Text("Current Scene: %s", scene_ptr_to_str(current_scene_ptr));
                 ImGui::Text("Replay Mode: %s", is_replay_mode(osu_manager_ptr) ? "Yes" : "No");
-                ImGui::Text("Pre-Jitting Mode: %s", prepared_all_methods ? "All Methods" : "Fast");
+                ImGui::Text("Prepared Methods: %d", prepared_methods_count);
             }
             if (ImGui::CollapsingHeader("Account Info", ImGuiTreeNodeFlags_None))
             {
@@ -509,83 +526,90 @@ void update_ui()
             }
             if (ImGui::CollapsingHeader("Playfield", ImGuiTreeNodeFlags_None))
             {
-                ImGui::Text("window_size: %f %f", window_size.x, window_size.y);
-                ImGui::Text("playfield_size: %f %f", playfield_size.x, playfield_size.y);
-                ImGui::Text("playfield_position: %f %f", playfield_position.x, playfield_position.y);
+                ImGui::Text("Window Size: %f %f", window_size.x, window_size.y);
+                ImGui::Text("Playfield Size: %f %f", playfield_size.x, playfield_size.y);
+                ImGui::Text("Playfield Position: %f %f", playfield_position.x, playfield_position.y);
             }
+            static const auto colored_if_null = [](const char *fmt, uintptr_t ptr) {
+                uintptr_t found = ptr;
+                if (!found)
+                    ImGui::PushStyleColor(ImGuiCol_Text, ITEM_UNAVAILABLE);
+                ImGui::Text(fmt, ptr);
+                if (!found)
+                    ImGui::PopStyleColor();
+            };
             if (ImGui::CollapsingHeader("Pointers", ImGuiTreeNodeFlags_None))
             {
-                ImGui::Text("binding_manager_ptr: %08X", binding_manager_ptr);
-                ImGui::Text("osu_manager_ptr: %08X", osu_manager_ptr);
-                ImGui::Text("selected_replay_ptr: %08X", selected_replay_ptr);
-                ImGui::Text("selected_song_ptr: %08X", selected_song_ptr);
-                ImGui::Text("update_timing_ptr_1: %08X", update_timing_ptr_1);
-                ImGui::Text("update_timing_ptr_2: %08X", update_timing_ptr_2);
-                ImGui::Text("update_timing_ptr_3: %08X", update_timing_ptr_3);
-                ImGui::Text("update_timing_ptr_4: %08X", update_timing_ptr_4);
-                ImGui::Text("window_manager_ptr: %08X", window_manager_ptr);
-                ImGui::Text("dispatch_table_id: %08X", dispatch_table_id);
-                ImGui::Text("dispatch_table_id_found: %s", nt_user_send_input_dispatch_table_id_found ? "Yes" : "No");
+                colored_if_null("Binding Manager: %08X", binding_manager_ptr);
+                colored_if_null("Osu Manager: %08X", osu_manager_ptr);
+                colored_if_null("Selected Replay: %08X", selected_replay_ptr);
+                colored_if_null("Selected Song: %08X", selected_song_ptr);
+                colored_if_null("Update Timing 1: %08X", update_timing_ptr_1);
+                colored_if_null("Update Timing 2: %08X", update_timing_ptr_2);
+                colored_if_null("Update Timing 3: %08X", update_timing_ptr_3);
+                colored_if_null("Update Timing 4: %08X", update_timing_ptr_4);
+                colored_if_null("Window Manager: %08X", window_manager_ptr);
+                colored_if_null("Dispatch Table ID: %08X", dispatch_table_id);
+                ImGui::Text("Dispatch Table ID Found: %s", nt_user_send_input_dispatch_table_id_found ? "Yes" : "No");
             }
             if (ImGui::CollapsingHeader("Methods", ImGuiTreeNodeFlags_None))
             {
-                ImGui::Text("hom_update_vars_code_start: %08X", hom_update_vars_code_start);
-                ImGui::Text("parse_beatmap_code_start: %08X", parse_beatmap_code_start);
-                ImGui::Text("beatmap_onload_code_start: %08X", beatmap_onload_code_start);
-                ImGui::Text("current_scene_code_start: %08X", current_scene_code_start);
-                ImGui::Text("selected_song_code_start: %08X", selected_song_code_start);
-                ImGui::Text("audio_time_code_start: %08X", audio_time_code_start);
-                ImGui::Text("osu_manager_code_start: %08X", osu_manager_code_start);
-                ImGui::Text("binding_manager_code_start: %08X", binding_manager_code_start);
-                ImGui::Text("selected_replay_code_start: %08X", selected_replay_code_start);
-                ImGui::Text("osu_client_id_code_start: %08X", osu_client_id_code_start);
-                ImGui::Text("osu_username_code_start: %08X", osu_username_code_start);
-                ImGui::Text("window_manager_code_start: %08X", window_manager_code_start);
-                ImGui::Text("score_multiplier_code_start: %08X", score_multiplier_code_start);
-                ImGui::Text("discord_rich_presence_code_start: %08X", discord_rich_presence_code_start);
-                ImGui::Text("check_flashlight_code_start: %08X", check_flashlight_code_start);
-                ImGui::Text("update_flashlight_code_start: %08X", update_flashlight_code_start);
-                ImGui::Text("update_timing_code_start: %08X", update_timing_code_start);
-                ImGui::Text("set_playback_rate_code_start: %08X", set_playback_rate_code_start);
-                ImGui::Text("check_timewarp_code_start: %08X", check_timewarp_code_start);
+                colored_if_null("Parse Beatmap: %08X", parse_beatmap_code_start);
+                colored_if_null("Beatmap Onload: %08X", beatmap_onload_code_start);
+                colored_if_null("Current Scene: %08X", current_scene_code_start);
+                colored_if_null("Selected Song: %08X", selected_song_code_start);
+                colored_if_null("Audio Time: %08X", audio_time_code_start);
+                colored_if_null("Osu Manager: %08X", osu_manager_code_start);
+                colored_if_null("Binding Manager: %08X", binding_manager_code_start);
+                colored_if_null("Selected Replay: %08X", selected_replay_code_start);
+                colored_if_null("Osu Client ID: %08X", osu_client_id_code_start);
+                colored_if_null("Osu Username: %08X", osu_username_code_start);
+                colored_if_null("Window Manager: %08X", window_manager_code_start);
+                colored_if_null("Score Multiplier: %08X", score_multiplier_code_start);
+                colored_if_null("Discord Rich Presence: %08X", discord_rich_presence_code_start);
+                colored_if_null("Check Flashlight: %08X", check_flashlight_code_start);
+                colored_if_null("Update Flashlight: %08X", update_flashlight_code_start);
+                colored_if_null("Update Timing: %08X", update_timing_code_start);
+                colored_if_null("Set Playback Rate: %08X", set_playback_rate_code_start);
+                colored_if_null("Check Timewarp: %08X", check_timewarp_code_start);
             }
             if (ImGui::CollapsingHeader("Offsets", ImGuiTreeNodeFlags_None))
             {
-                ImGui::Text("hom_update_vars_hidden_loc: 0x%X", hom_update_vars_hidden_loc);
-                ImGui::Text("approach_rate_offsets: 0x%X 0x%X 0x%X", approach_rate_offsets[0], approach_rate_offsets[1], approach_rate_offsets[2]);
-                ImGui::Text("circle_size_offsets: 0x%X 0x%X 0x%X", circle_size_offsets[0], circle_size_offsets[1], circle_size_offsets[2]);
-                ImGui::Text("overall_difficulty_offsets: 0x%X 0x%X", overall_difficulty_offsets[0], overall_difficulty_offsets[1]);
-                ImGui::Text("beatmap_onload_offset: 0x%X", beatmap_onload_offset);
-                ImGui::Text("current_scene_offset: 0x%X", current_scene_offset);
-                ImGui::Text("selected_replay_offset: 0x%X", selected_replay_offset);
-                ImGui::Text("window_manager_offset: 0x%X", window_manager_offset);
-                ImGui::Text("selected_song_offset: 0x%X", selected_song_offset);
-                ImGui::Text("audio_time_offset: 0x%X", audio_time_offset);
-                ImGui::Text("osu_manager_offset: 0x%X", osu_manager_offset);
-                ImGui::Text("binding_manager_offset: 0x%X", binding_manager_offset);
-                ImGui::Text("client_id_offset: 0x%X", client_id_offset);
-                ImGui::Text("username_offset: 0x%X", username_offset);
-                ImGui::Text("check_timewarp_offset: 0x%X", check_timewarp_offset);
+                colored_if_null("Hitobject Manager Update Variables: %08X", hom_update_vars_hidden_loc);
+                ImGui::Text("AR: %08X %08X %08X", approach_rate_offsets[0], approach_rate_offsets[1], approach_rate_offsets[2]);
+                ImGui::Text("CS: %08X %08X %08X", circle_size_offsets[0], circle_size_offsets[1], circle_size_offsets[2]);
+                ImGui::Text("OD: %08X %08X", overall_difficulty_offsets[0], overall_difficulty_offsets[1]);
+                colored_if_null("Beatmap Onload: %08X", beatmap_onload_offset);
+                colored_if_null("Current Scene: %08X", current_scene_offset);
+                colored_if_null("Selected Replay: %08X", selected_replay_offset);
+                colored_if_null("Window Manager: %08X", window_manager_offset);
+                colored_if_null("Selected Song: %08X", selected_song_offset);
+                colored_if_null("Audio Time: %08X", audio_time_offset);
+                colored_if_null("Osu Manager: %08X", osu_manager_offset);
+                colored_if_null("Binding Manager: %08X", binding_manager_offset);
+                colored_if_null("Client ID: %08X", client_id_offset);
+                colored_if_null("Username: %08X", username_offset);
+                colored_if_null("Check Timewarp: %08X", check_timewarp_offset);
             }
             if (ImGui::CollapsingHeader("Hook Jumps", ImGuiTreeNodeFlags_None))
             {
-                ImGui::Text("discord_rich_presence_jump_back: %08X", discord_rich_presence_jump_back);
-                ImGui::Text("ar_hook_jump_back: %08X", ar_hook_jump_back);
-                ImGui::Text("beatmap_onload_hook_jump_back: %08X", beatmap_onload_hook_jump_back);
-                ImGui::Text("check_timewarp_hook_1_jump_back: %08X", check_timewarp_hook_1_jump_back);
-                ImGui::Text("check_timewarp_hook_2_jump_back: %08X", check_timewarp_hook_2_jump_back);
-                ImGui::Text("cs_hook_jump_back: %08X", cs_hook_jump_back);
-                ImGui::Text("od_hook_jump_back: %08X", od_hook_jump_back);
-                ImGui::Text("score_multiplier_hook_jump_back: %08X", score_multiplier_hook_jump_back);
-                ImGui::Text("selected_replay_hook_jump_back: %08X", selected_replay_hook_jump_back);
-                ImGui::Text("set_playback_rate_jump_back: %08X", set_playback_rate_jump_back);
+                colored_if_null("Discord Rich Presence: %08X", discord_rich_presence_jump_back);
+                colored_if_null("AR Hook: %08X", ar_hook_jump_back);
+                colored_if_null("Beatmap Onload: %08X", beatmap_onload_hook_jump_back);
+                colored_if_null("Check Timewarp 1: %08X", check_timewarp_hook_1_jump_back);
+                colored_if_null("Check Timewarp 2: %08X", check_timewarp_hook_2_jump_back);
+                colored_if_null("CS Hook: %08X", cs_hook_jump_back);
+                colored_if_null("OD Hook: %08X", od_hook_jump_back);
+                colored_if_null("Score Multiplier: %08X", score_multiplier_hook_jump_back);
+                colored_if_null("Selected Replay: %08X", selected_replay_hook_jump_back);
+                colored_if_null("Set Playback Rate: %08X", set_playback_rate_jump_back);
             }
         }
         ImGui::End(); // tab_content
         ImGui::EndPopup();
     }
 
-    ImGui::End(); // bettermint
+    ImGui::End(); // freedom
     ImGui::PopFont();
 }
 
@@ -602,8 +626,7 @@ void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)
     const char *slider_fmt;
     if (!p->found)
     {
-        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-        ImGui::PushStyleColor(ImGuiCol_Text, ITEM_DISABLED);
+        ImGui::BeginDisabled();
         slider_fmt = p->error_message;
     }
     else
@@ -621,13 +644,11 @@ void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)
                 internal_memory_read(g_process, param_ptr, &p->value);
             }
         }
-        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-        ImGui::PushStyleColor(ImGuiCol_Text, p->found ? ITEM_DISABLED : ITEM_UNAVAILABLE);
         ImGui::PushID(slider_fmt);
+        ImGui::BeginDisabled();
         ImGui::SliderFloat("", &p->value, .0f, 11.0f, slider_fmt);
+        ImGui::EndDisabled();
         ImGui::PopID();
-        ImGui::PopStyleColor();
-        ImGui::PopItemFlag();
     }
     else
     {
@@ -646,23 +667,28 @@ void parameter_slider(uintptr_t selected_song_ptr, Parameter *p)
     }
     ImGui::PopID();
     if (!p->found)
-    {
-        ImGui::PopStyleColor();
-        ImGui::PopItemFlag();
-    }
+        ImGui::EndDisabled();
     ImGui::Dummy(ImVec2(0.0f, 5.0f));
 }
 
 void draw_debug_log()
 {
-    if (show_debug_log_window)
+    if (cfg_show_debug_log)
     {
         ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowWidth(), ImGui::GetWindowPos().y), ImGuiCond_Once);
         ImGui::SetNextWindowSize(ImVec2(640.f, 480.f), ImGuiCond_Once);
         ImGui::PushFont(font);
-        ImGui::Begin("Debug Log", NULL);
+        ImGui::Begin("Debug Log", &cfg_show_debug_log);
+        if (ImGui::Checkbox("Write Debug Log", &cfg_write_debug_log))
+            ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+        ImGui::Dummy(ImVec2(.0f, 2.f));
         debug_log.draw();
         ImGui::End();
         ImGui::PopFont();
+        if (!cfg_show_debug_log)
+        {
+            cfg_write_debug_log = false;
+            ImGui::SaveIniSettingsToDisk(ImGui::GetIO().IniFilename);
+        }
     }
 }
