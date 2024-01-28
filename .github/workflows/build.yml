@@ -1,43 +1,33 @@
-name: build-osuassist
-
+name: build-freedom
 on:
   push:
-    branches:
-      - main
     paths:
-      - 'osuassist/**'
-      - 'imgui/**'
-      - 'include/**'
+    - 'freedom/**'
+    - 'include/**'
+    - 'vendor/**'
   workflow_dispatch:
-    branches:
-      - main
     paths:
-      - 'osuassist/**'
-      - 'imgui/**'
+      - 'freedom/**'
       - 'include/**'
+      - 'vendor/**'
 
 jobs:
   windows-msvc:
     runs-on: windows-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Set Up Visual Studio Environment
-        uses: Ciremun/gha-setup-vsdevenv@avoid-deprecation-warnings
+      - uses: actions/checkout@v3
+      - uses: Ciremun/gha-setup-vsdevenv@avoid-deprecation-warnings
         with:
           arch: 'x86'
-
-      - name: Build Project
+      - name: build
         shell: cmd
         run: |
           cl nobuild.c && nobuild.exe
-
-      - name: Upload Artifacts
+      - name: freedom
         uses: actions/upload-artifact@v3
         with:
-          name: osuassist
+          name: freedom
           path: |
-            osuassist.dll
+            freedom_injector.exe
+            freedom.dll
             config.ini
