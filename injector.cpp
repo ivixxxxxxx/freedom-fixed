@@ -1,6 +1,8 @@
 #include <windows.h>
 #include <tlhelp32.h>
+
 #include <string>
+
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
@@ -12,28 +14,22 @@
 
 #define mkfunc(f) auto s##f(mks(#f)); _##f = (t##f)GetProcAddress(k32, s##f.c_str())
 
-typedef DWORD(WINAPI* tGetFullPathNameW)(LPCWSTR lpFileName, DWORD nBufferLength, LPWSTR lpBuffer, LPWSTR* lpFilePart);
-typedef HANDLE(WINAPI* tCreateToolhelp32Snapshot)(DWORD dwFlags, DWORD th32ProcessID);
-typedef BOOL(WINAPI* tProcess32FirstW)(HANDLE hSnapshot, LPPROCESSENTRY32 lppe);
-typedef BOOL(WINAPI* tProcess32NextW)(HANDLE hSnapshot, LPPROCESSENTRY32 lppe);
-typedef BOOL(WINAPI* tThread32First)(HANDLE hSnapshot, LPTHREADENTRY32 lpte);
-typedef BOOL(WINAPI* tThread32Next)(HANDLE hSnapshot, LPTHREADENTRY32 lpte);
-typedef HANDLE(WINAPI* tOpenThread)(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwThreadId);
-typedef BOOL(WINAPI* tCloseHandle)(HANDLE hObject);
-typedef HANDLE(WINAPI* tOpenProcess)(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId);
-typedef LPVOID(WINAPI* tVirtualAllocEx)(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect);
-typedef BOOL(WINAPI* tWriteProcessMemory)(HANDLE hProcess, LPVOID lpBaseAddress, LPCVOID lpBuffer, SIZE_T nSize, SIZE_T* lpNumberOfBytesWritten);
-typedef HANDLE(WINAPI* tCreateRemoteThread)(HANDLE hProcess, LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize,
+typedef DWORD (WINAPI *tGetFullPathNameW)(LPCWSTR lpFileName, DWORD nBufferLength, LPWSTR lpBuffer, LPWSTR *lpFilePart);
+typedef HANDLE (WINAPI *tCreateToolhelp32Snapshot)(DWORD dwFlags, DWORD th32ProcessID);
+typedef BOOL (WINAPI *tProcess32FirstW)(HANDLE hSnapshot, LPPROCESSENTRY32 lppe);
+typedef BOOL (WINAPI *tProcess32NextW)(HANDLE hSnapshot, LPPROCESSENTRY32 lppe);
+typedef BOOL (WINAPI *tCloseHandle)(HANDLE hObject);
+typedef HANDLE (WINAPI *tOpenProcess)(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId);
+typedef LPVOID (WINAPI *tVirtualAllocEx)(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect);
+typedef BOOL (WINAPI *tWriteProcessMemory)(HANDLE hProcess, LPVOID lpBaseAddress, LPCVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesWritten);
+typedef HANDLE (WINAPI *tCreateRemoteThread)(HANDLE hProcess, LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize,
     LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId);
-typedef HMODULE(WINAPI* tLoadLibraryW)(LPCWSTR lpLibFileName);
+typedef HMODULE (WINAPI *tLoadLibraryW)(LPCWSTR lpLibFileName);
 
 tCreateToolhelp32Snapshot _CreateToolhelp32Snapshot = 0;
 tGetFullPathNameW _GetFullPathNameW = 0;
 tProcess32FirstW _Process32FirstW = 0;
 tProcess32NextW _Process32NextW = 0;
-tThread32First _Thread32First = 0;
-tThread32Next _Thread32Next = 0;
-tOpenThread _OpenThread = 0;
 tCloseHandle _CloseHandle = 0;
 tOpenProcess _OpenProcess = 0;
 tVirtualAllocEx _VirtualAllocEx = 0;
@@ -41,6 +37,7 @@ tWriteProcessMemory _WriteProcessMemory = 0;
 tCreateRemoteThread _CreateRemoteThread = 0;
 tLoadLibraryW _LoadLibraryW = 0;
 
+// https://gist.github.com/EvanMcBroom/ace2a9af19fb5e7b2451b1cd4c07bf96
 constexpr uint32_t modulus() {
     return 0x7fffffff;
 }
@@ -53,9 +50,12 @@ template<size_t N>
 constexpr uint32_t seed(const char(&entropy)[N], const uint32_t iv = 0) {
     auto value{ iv };
     for (size_t i{ 0 }; i < N; i++) {
+        // Xor 1st byte of seed with input byte
         value = (value & ((~0) << 8)) | ((value & 0xFF) ^ entropy[i]);
+        // Rotate left 1 byte
         value = value << 8 | value >> ((sizeof(value) * 8) - 8);
     }
+    // The seed is required to be less than the modulus and odd
     while (value > modulus()) value = value >> 1;
     return value << 1 | 1;
 }
@@ -77,7 +77,7 @@ constexpr auto crypt(const char(&input)[N], const uint32_t seed = 0) {
     return blob;
 }
 
-static inline DWORD get_process_id(const wchar_t* process_name)
+static inline DWORD get_process_id(const wchar_t *process_name)
 {
     DWORD process_id = 0;
     HANDLE hSnap = _CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -103,19 +103,7 @@ static inline DWORD get_process_id(const wchar_t* process_name)
     return process_id;
 }
 
-static auto suspend_thread(HANDLE hThread) -> bool
-{
-    DWORD suspend_count = SuspendThread(hThread);
-    return suspend_count != (DWORD)-1;
-}
-
-static auto resume_thread(HANDLE hThread) -> bool
-{
-    DWORD suspend_count = ResumeThread(hThread);
-    return suspend_count != (DWORD)-1;
-}
-
-int wmain(int argc, wchar_t** argv, wchar_t** envp)
+int wmain(int argc, wchar_t **argv, wchar_t **envp)
 {
     auto sKernel32Dll(mks("Kernel32.dll"));
     auto k32 = GetModuleHandleA(sKernel32Dll.c_str());
@@ -123,9 +111,6 @@ int wmain(int argc, wchar_t** argv, wchar_t** envp)
     mkfunc(CreateToolhelp32Snapshot);
     mkfunc(Process32FirstW);
     mkfunc(Process32NextW);
-    mkfunc(Thread32First);
-    mkfunc(Thread32Next);
-    mkfunc(OpenThread);
     mkfunc(CloseHandle);
     mkfunc(OpenProcess);
     mkfunc(VirtualAllocEx);
@@ -143,10 +128,10 @@ int wmain(int argc, wchar_t** argv, wchar_t** envp)
     auto process_name_s = mks("osu!.exe");
     auto process_name_w = std::wstring(process_name_s.begin(), process_name_s.end());
 
-    auto dll_name_s = mks("bettermint.dll");
+    auto dll_name_s = mks("freedom.dll");
     auto dll_name_w = std::wstring(dll_name_s.begin(), dll_name_s.end());
 
-    const wchar_t* process_name = argc > 1 ? argv[1] : process_name_w.c_str();
+    const wchar_t *process_name = argc > 1 ? argv[1] : process_name_w.c_str();
     DWORD process_id = get_process_id(process_name);
     if (process_id == 0)
     {
@@ -154,7 +139,7 @@ int wmain(int argc, wchar_t** argv, wchar_t** envp)
         return 1;
     }
 
-    const wchar_t* dll_name = argc > 2 ? argv[2] : dll_name_w.c_str();
+    const wchar_t *dll_name = argc > 2 ? argv[2] : dll_name_w.c_str();
     static wchar_t module_path[MAX_PATH * 2];
     DWORD module_path_length = _GetFullPathNameW(dll_name, MAX_PATH * 2, module_path, NULL);
     if (module_path_length == 0)
@@ -166,7 +151,7 @@ int wmain(int argc, wchar_t** argv, wchar_t** envp)
     HANDLE hProc = _OpenProcess(PROCESS_ALL_ACCESS, 0, process_id);
     if (hProc != NULL)
     {
-        void* loc = _VirtualAllocEx(hProc, 0, module_path_length * sizeof(wchar_t), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+        void *loc = _VirtualAllocEx(hProc, 0, module_path_length * sizeof(wchar_t), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
         if (loc)
         {
             if (_WriteProcessMemory(hProc, loc, module_path, module_path_length * sizeof(wchar_t), 0))
@@ -188,72 +173,6 @@ int wmain(int argc, wchar_t** argv, wchar_t** envp)
 
     if (hProc)
         _CloseHandle(hProc);
-
-    HANDLE hSnap = _CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
-    if (hSnap != INVALID_HANDLE_VALUE)
-    {
-        THREADENTRY32 te;
-        te.dwSize = sizeof(te);
-
-        if (_Thread32First(hSnap, &te))
-        {
-            do
-            {
-                if (te.th32OwnerProcessID == process_id)
-                {
-                    HANDLE hThread = _OpenThread(THREAD_SUSPEND_RESUME, FALSE, te.th32ThreadID);
-                    if (hThread)
-                    {
-                        if (suspend_thread(hThread))
-                        {
-                            printf("\n[+] Suspended osu!auth thread... ID: %lu", te.th32ThreadID);
-                        }
-                        else
-                        {
-                            printf("\n[!] Failed to suspend osu!auth thread... ID: %lu", te.th32ThreadID);
-                        }
-
-                        _CloseHandle(hThread);
-                    }
-                }
-            } while (_Thread32Next(hSnap, &te));
-        }
-
-        _CloseHandle(hSnap);
-    }
-
-    hSnap = _CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
-    if (hSnap != INVALID_HANDLE_VALUE)
-    {
-        THREADENTRY32 te;
-        te.dwSize = sizeof(te);
-
-        if (_Thread32First(hSnap, &te))
-        {
-            do
-            {
-                if (te.th32OwnerProcessID == process_id)
-                {
-                    HANDLE hThread = _OpenThread(THREAD_SUSPEND_RESUME, FALSE, te.th32ThreadID);
-                    if (hThread)
-                    {
-                        if (resume_thread(hThread))
-                        {
-                            printf("\n[+] Resumed osu!auth thread... ID: %lu", te.th32ThreadID);
-                        }
-                        else
-                        {
-                            printf("\n[!] Failed to resume osu!auth thread... ID: %lu", te.th32ThreadID);
-                        }
-
-                        _CloseHandle(hThread);
-                    }
-                }
-            } while (_Thread32Next(hSnap, &te));
-        }
-
-        _CloseHandle(hSnap);
-    }
 
     return 0;
 }

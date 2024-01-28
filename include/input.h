@@ -3,7 +3,7 @@
 #include <windows.h>
 
 #include "window.h"
-#include "bettermint.h"
+#include "freedom.h"
 #include "scan.h"
 
 extern uintptr_t binding_manager_code_start;
