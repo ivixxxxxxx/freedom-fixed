@@ -6,8 +6,7 @@ Freedom - internal osu! mod, realtime difficulty changer for any beatmap, works 
 
 ## Download
 
-[GitHub Actions Artifact](https://github.com/Ciremun/freedom/actions) - most recent build.  
-[Releases](https://github.com/Ciremun/freedom/releases/latest) - probably outdated build.  
+[GitHub Actions Artifact](https://github.com/Ciremun/freedom/actions) - most recent build.
 
 ## Usage
 
@@ -56,45 +55,3 @@ mod ui should appear in top left corner of the osu! window, see [controls](#cont
     * Set Discord RPC Status Text
     * Unload DLL
 
-## Build
-
-It shouldn't be necessary to build the project unless you're debugging or modifying the source code  
-
-### Requirements
-
-* MSVC x64/x86 build tools
-* Windows SDK
-* .NET Framework SDK
-
-![installer_preview](https://user-images.githubusercontent.com/38132413/199610177-89f05acc-c1ff-4656-9839-2abf66ffd126.png)  
-
-### Execute nobuild
-
-    cmd.exe
-    nobuild.exe
-
-Alternatively, bootstrap nobuild
-
-    cmd.exe
-    vcvarsall x86
-    cl nobuild.c && nobuild.exe
-
-### Optional nobuild flags
-
-Build and run standalone Freedom with debug symbols:
-
-    nobuild.exe debug standalone run
-
-Standalone Freedom is currently used for ui debugging as an alternative to unloading the dll.  
-It doesn't function as an external, [features](#features) will not work.
-
-|    Flag     |          Description          |
-|:-----------:|:-----------------------------:|
-|             | Freedom only                  |
-| rebuild     | update headers / rebuild all  |
-| debug       | symbols, disable optimizations|
-| console     | print logs to console         |
-| inject      | run injector after build      |
-| all         | build standalone and internal |
-| standalone  | build standalone only         |
-| run         | run standalone after build    |
