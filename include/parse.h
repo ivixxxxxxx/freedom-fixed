@@ -82,6 +82,7 @@ struct Circle
     bool clicked = false;
     HitObjectType type;
     Vector2<float> position;
+    bool valid;
 };
 
 struct BeatmapData
