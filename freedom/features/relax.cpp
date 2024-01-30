@@ -87,46 +87,34 @@ void update_relax(Circle &circle, const int32_t audio_time)
                     ImColor(0, 255, 255, 100));
             }
 
-if (valid_timing && valid_position)
-{
-    if (!circle.clicked)
-    {
-        if (rand_range_i(1, 100) <= 13)
-        {
-            keyup_delay = rand_range_f(0.0f, 0.013f);
-        }
-        else
-        {
-            keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
-
-            if (cfg_timewarp_enabled)
+            if (valid_timing && valid_position)
             {
-                double timewarp_playback_rate_div_100 = cfg_timewarp_playback_rate / 100.0;
-                keyup_delay /= timewarp_playback_rate_div_100;
-            }
-            else if (circle.type == HitObjectType::Slider || circle.type == HitObjectType::Spinner)
-            {
-                if (current_beatmap.mods & Mods::DoubleTime)
-                    keyup_delay /= 1.5;
-                else if (current_beatmap.mods & Mods::HalfTime)
-                    keyup_delay /= 0.75;
-            }
-        }
+                if (!circle.clicked)
+                {
+                    if (rand_range_i(1, 100) <= 13)
+                    {
+                        keyup_delay = rand_range_f(0.0f, 0.013f);
+                    }
+                    else
+                    {
+                        keyup_delay = circle.end_time ? circle.end_time - circle.start_time : 0.5;
 
-        // Set circle.valid to true when it's time to check for clicking
-        circle.valid = true;
+                        if (cfg_timewarp_enabled)
+                        {
+                            double timewarp_playback_rate_div_100 = cfg_timewarp_playback_rate / 100.0;
+                            keyup_delay /= timewarp_playback_rate_div_100;
+                        }
+                        else if (circle.type == HitObjectType::Slider || circle.type == HitObjectType::Spinner)
+                        {
+                            if (current_beatmap.mods & Mods::DoubleTime)
+                                keyup_delay /= 1.5;
+                            else if (current_beatmap.mods & Mods::HalfTime)
+                                keyup_delay /= 0.75;
+                        }
+                    }
 
-        current_click = (rand_range_i(0, 1) >= 1) ? right_click[0] : left_click[0];
-
-        send_keyboard_input(current_click, 0);
-        FR_INFO_FMT("Relax hit %d!, %d %d", current_beatmap.hit_object_idx, circle.start_time, circle.end_time);
-
-        keydown_time = ImGui::GetTime();
-        circle.clicked = true;
-        od_check_ms = .0f;
-    }
-}
-
+                    // Set circle.valid to true when it's time to check for clicking
+                    circle.valid = true;
 
                     current_click = (rand_range_i(0, 1) >= 1) ? right_click[0] : left_click[0];
 
