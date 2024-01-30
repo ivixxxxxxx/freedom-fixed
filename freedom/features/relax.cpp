@@ -1,9 +1,11 @@
 #include "features/relax.h"
 #include "window.h"
 
-float od_window = 5.f;
-float od_window_left_offset = .0f;
-float od_window_right_offset = .0f;
+float od_check_ms = 0.0f;
+bool debug_relax = false;
+int wait_hitobjects_max = 10;
+int wait_hitobjects_min = 3;
+float jumping_window_offset = 0.0f;
 
 static char current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
 
@@ -19,7 +21,8 @@ static const auto rand_range_i = [](int i_min, int i_max) -> int
 };
 
 void calc_od_timing()
-{   if (cfg_relax_checks_od && (od_check_ms == .0f))
+{
+    if (cfg_relax_checks_od && (od_check_ms == 0.0f))
     {
         od_check_ms = rand_range_f(od_window_left_offset, od_window_right_offset);
         if (cfg_jumping_window)
@@ -39,6 +42,7 @@ void calc_od_timing()
         }
     }
 }
+
 Vector2<float> mouse_position()
 {
     Vector2<float> mouse_pos;
@@ -48,6 +52,7 @@ Vector2<float> mouse_position()
     mouse_pos.y = *(float *)(osu_ruleset_ptr + OSU_RULESET_MOUSE_Y_OFFSET);
     return mouse_pos;
 }
+
 void update_relax(Circle &circle, const int32_t audio_time)
 {
     static double keydown_time = 0.0;
@@ -94,7 +99,7 @@ void update_relax(Circle &circle, const int32_t audio_time)
                 }
                 keydown_time = ImGui::GetTime();
                 circle.clicked = true;
-                od_check_ms = .0f;
+                od_check_ms = 0.0f;
             }
         }
     }
@@ -104,6 +109,7 @@ void update_relax(Circle &circle, const int32_t audio_time)
         send_keyboard_input(current_click, KEYEVENTF_KEYUP);
     }
 }
+
 void relax_on_beatmap_load()
 {
     current_click = cfg_relax_style == 'a' ? right_click[0] : left_click[0];
