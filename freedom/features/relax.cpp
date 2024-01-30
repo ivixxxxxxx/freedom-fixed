@@ -1,4 +1,4 @@
-#include "features/include/features/relax.h"
+#include "features/relax.h"
 #include "window.h"
 #include "hitobject.h"
 
