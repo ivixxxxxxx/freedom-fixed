@@ -1,5 +1,6 @@
 #include "features/relax.h"
 #include "window.h"
+#include "hitobject.h"
 
 float od_check_ms = 0.0f;
 bool debug_relax = false;
